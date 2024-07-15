@@ -1,0 +1,130 @@
+body.vscode-light #editNodeContainer {
+    align-items: center;
+}
+
+body.vscode-light #editNodeContainer #outerDiv {
+    margin-top: 5%;
+    margin-left: 10%;
+    margin-right: 10%;
+    padding-bottom: 10%;
+}
+
+body.vscode-light #editNodeContainer #innerDiv {
+    display: flex;
+    flex-direction: column;
+}
+
+
+body.vscode-light #editNodeContainer #input-group1 {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    background-color: #F7F7F7;
+}
+
+body.vscode-light #editNodeContainer #input-group1 input {
+    /* 修改宽度和高度 */
+
+    margin-top: 10px;
+    margin-bottom: 15px;
+    height: 26px;
+    width: 95%;
+    border: 1px solid #CECECE;
+    box-shadow: none;
+    outline-color: #005FB8;
+    outline-width: 1px;
+    border-radius: 2px;
+    background-color: #FFFFFF;
+    color: #3B3B3B;
+    /* 更改为任何你喜欢的颜色 */
+
+
+    /* 添加一些内边距以便文本看起来更舒适 */
+    padding: 0 10px;
+}
+
+body.vscode-light #editNodeContainer #input-group2 {
+    padding: 12px;
+    background-color: #F7F7F7;
+}
+
+body.vscode-light #editNodeContainer #input-group2 #propsLabel {
+    margin-bottom: 10px;
+}
+
+body.vscode-light #editNodeContainer #input-group2 #props {
+    display: flex;
+    flex-direction: column;
+}
+
+body.vscode-light #editNodeContainer #input-group2 #props input {
+    /* 修改宽度和高度 */
+
+    margin: 5px;
+    height: 26px;
+    width: 30%;
+    border: 1px solid #CECECE;
+    box-shadow: none;
+    outline-color: #005FB8;
+    outline-width: 1px;
+    border-radius: 2px;
+    background-color: #FFFFFF;
+    color: #3B3B3B;
+    /* 更改为任何你喜欢的颜色 */
+
+
+    /* 添加一些内边距以便文本看起来更舒适 */
+    padding: 0 10px;
+}
+
+body.vscode-light #editNodeContainer button {
+    border: none;
+    border-radius: 2px;
+    box-shadow: none;
+    background-color: #005FB8;
+    color: #FFFFFF;
+    height: 25px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+body.vscode-light #editNodeContainer button:hover {
+    background-color: #0258A8;
+}
+
+body.vscode-light #editNodeContainer button:focus {
+    background-color: #0258A8;
+    outline-color: #0258A8;
+    outline-style: double;
+    outline-width: 3px;
+}
+
+body.vscode-light #editNodeContainer select {
+    margin: 5px;
+    background-color: #FFFFFF;
+    width: 70px;
+    color: #3B3B3B;
+    height: 26px;
+    border: 1px solid #CECECE;
+    box-shadow: none;
+    outline-color: #0258A8;
+    outline-width: 1px;
+    border-radius: 2px;
+}
+
+body.vscode-light #editNodeContainer #buttons {
+    margin-top: 10px;
+    padding: 12px;
+}
+
+body.vscode-light #editNodeContainer #buttons #save {
+    width: 50px;
+    float: right;
+}
+
+body.vscode-light #editNodeContainer #buttons #quit {
+    width: 50px;
+    float: right;
+}

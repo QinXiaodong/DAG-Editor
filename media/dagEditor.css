@@ -1,0 +1,69 @@
+/* CSS样式 */
+#canvasContainer {
+    width: 100%;
+    height: 100vh;
+    visibility: hidden;
+}
+
+body>div.view {
+    width: 100%;
+    height: 100vh;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    visibility: hidden;
+}
+
+
+#canvasContainer canvas {
+    cursor: auto;
+}
+
+body.vscode-dark .g6-contextmenu {
+    background-color: rgba(0, 0, 0, 0)
+}
+
+body.vscode-dark .g6-contextmenu ul {
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid #454545;
+    background-color: #252526;
+
+}
+
+body.vscode-dark .g6-contextmenu ul li {
+
+    color: #CCCCCC;
+    border-radius: 5px;
+    padding: 5px 25px;
+}
+
+body.vscode-dark .g6-contextmenu ul li:hover {
+    color: #FFFFFF;
+    background: #04395E;
+}
+
+body.vscode-light .g6-contextmenu {
+    background-color: rgba(0, 0, 0, 0)
+}
+
+body.vscode-light .g6-contextmenu ul {
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid #D4D4D4;
+    background-color: #FFFFFF;
+
+}
+
+body.vscode-light .g6-contextmenu ul li {
+    color: #6A6A6A;
+    border-radius: 5px;
+    padding: 5px 25px;
+}
+
+body.vscode-light .g6-contextmenu ul li:hover {
+    color: #FFFFFF;
+    background: #0060C0;
+}
+
+

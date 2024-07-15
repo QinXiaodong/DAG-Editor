@@ -1,0 +1,92 @@
+body.vscode-dark #manageUdfContainer {
+    align-items: center;
+}
+
+body.vscode-dark #manageUdfContainer #outerDiv {
+    margin-top: 5%;
+    margin-left: 25%;
+    margin-right: 25%;
+    padding-bottom: 10%;
+}
+
+body.vscode-dark #manageUdfContainer #innerDiv {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #CCCCCC;
+    border-radius: 6px;
+    /* margin-bottom: 50px; */
+}
+
+body.vscode-dark #manageUdfContainer #nodeName {
+    margin: 20px;
+    text-align: center;
+    font-size: large;
+    color: #FFFFFF;
+    font-style: italic;
+
+}
+
+body.vscode-dark #manageUdfContainer #buttons {
+    text-align: center;
+    margin: 20px;
+}
+
+body.vscode-dark #manageUdfContainer #buttons button {
+    width: 50px;
+}
+
+body.vscode-dark #manageUdfContainer button {
+    border: none;
+    border-radius: 2px;
+    box-shadow: none;
+    background-color: #0E639C;
+    color: #FFFFFF;
+    height: 25px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+body.vscode-dark #manageUdfContainer button:hover {
+    background-color: #1177BB;
+}
+
+body.vscode-dark #manageUdfContainer button:focus {
+    background-color: #1177BB;
+    outline-color: #1177BB;
+    outline-style: double;
+    outline-width: 3px;
+}
+
+body.vscode-dark #manageUdfContainer ul {
+    padding: 0px;
+}
+
+body.vscode-dark #manageUdfContainer li {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 20%;
+    margin-right: 20%;
+    text-align: center;
+    align-items: center;
+    height: 30px;
+    line-height: 30px;
+    color: #FFFFFF;
+    border-radius: 4px;
+    border: 1px solid #CCCCCC;
+    background: #2D2D2D;
+    list-style-type: none;
+    /* 移除列表项前的标记 */
+}
+
+body.vscode-dark #manageUdfContainer .moving {
+    background: transparent;
+    color: transparent;
+    border: 1px dashed #ccc;
+}
