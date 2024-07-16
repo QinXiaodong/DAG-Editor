@@ -40,7 +40,7 @@ export function editUdf(nodeId: string, udfName: string) {
     const udf = globalDag.getUdf(nodeId, udfName)!;
 
     const enableInput = <HTMLInputElement>document.querySelector(`#${viewId} #enable`);
-    if (udf.disabled && udf.disabled ===true) {
+    if (globalDag.isUdfDisabled(udf)) {
         enableInput.checked = false;
     } else {
         enableInput.checked = true;

@@ -172,13 +172,21 @@ export class DagClass {
         this.setNodes(newNodes);
     }
     isDisabled(nodeId: string) {
-        return this.getNode(nodeId)?.disabled;
+        const node = this.getNode(nodeId);
+        return node?.disabled && node?.disabled === true;
+    }
+    isNodeDisabled(node: Node) {
+        return node.disabled && node.disabled === true;
+    }
+    isUdfDisabled(udf: Udf) {
+        return udf.disabled && udf.disabled === true;
     }
     changeNodeDisabledStatus(nodeId: string) {
-        if (this.getNode(nodeId)!.disabled) {
-            this.getNode(nodeId)!.disabled = undefined;
+        const node = this.getNode(nodeId)!;
+        if (node.disabled && node.disabled === true) {
+            node.disabled = undefined;
         } else {
-            this.getNode(nodeId)!.disabled = true;
+            node.disabled = true;
         }
     }
     changeNodeName(oldName: string, newName: string) {

@@ -136,7 +136,7 @@ function getGraphData(): GraphData {
                 size: [Math.max(180, 11 * node.name.length), 40],
             },
 
-            states: [node.disabled ? 'disabled' : 'default']
+            states: [globalDag.isNodeDisabled(node) ? 'disabled' : 'default']
         });
 
         // 渲染边
@@ -155,7 +155,7 @@ function getGraphData(): GraphData {
                         radius: 20,
                         stroke: isDark() ? '#CCCCCC' : '#616161',
                     },
-                    states: [node.disabled || preNode.disabled ? 'disabled' : 'default']
+                    states: [(globalDag.isNodeDisabled(node) || globalDag.isNodeDisabled(preNode)) ? 'disabled' : 'default']
                 });
             }
         }

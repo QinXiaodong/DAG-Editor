@@ -82,6 +82,14 @@ export function manageUdf(nodeId: string) {
     const nodeName = <HTMLDivElement>document.querySelector(`#${viewId} #nodeName`)!;
     nodeName.textContent = currentNodeId;
 
+    const node = globalDag.getNode(currentNodeId)!;
+    const innerDiv = <HTMLDivElement>document.querySelector(`#${viewId} #innerDiv`);
+    if (globalDag.isNodeDisabled(node)) {
+        innerDiv.style.borderStyle = 'dashed';
+    } else {
+        innerDiv.style.borderStyle = 'solid';
+    }
+
     // 清理历史的udf列表
     const udfList = document.querySelector(`#${viewId} ul`)!;
     udfList.innerHTML = '';
@@ -101,7 +109,7 @@ export function addUdf(udf: Udf) {
     // 创建一个新的列表元素
     let item: HTMLLIElement = document.createElement('li');
     item.draggable = true;
-    if (udf.disabled && udf.disabled === true) {
+    if (globalDag.isUdfDisabled(udf)) {
         item.style.borderStyle = 'dashed';
     }
     // 点击列表元素打开编辑UDF视图
