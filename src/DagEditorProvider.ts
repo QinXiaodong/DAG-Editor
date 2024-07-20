@@ -146,7 +146,7 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
             </head>
             <body>
                 <div id='canvasContainer'></div>
-                <div id='editNodeContainer' class='view'>
+                <div id='editNodeContainer' class='view' style="display: none;">
                     <div id="outerDiv">
                         <div id="innerDiv">
                             <form>  
@@ -175,7 +175,7 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                         </div>
                     </div>
                 </div>
-                <div id="manageUdfContainer" class="view">
+                <div id="manageUdfContainer" class="view" style="display: none;">
                     <div id="outerDiv">
                         <div id="innerDiv">
                             <div id="nodeName"></div>
@@ -187,7 +187,7 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                         </div>
                     </div>
                 </div>
-                <div id='editUdfContainer' class='view'>
+                <div id='editUdfContainer' class='view' style="display: none;">
                     <div id="outerDiv">
                         <div id="innerDiv">
                             <form>  

@@ -19,8 +19,8 @@ window.addEventListener('message', (e) => {
 
 // 窗口大小有变化时调整graph大小
 window.onresize = function () {
-  const container = <HTMLDivElement>document.getElementById('container');
-  graph.resize(container?.clientWidth, container?.clientHeight);
+  const container = <HTMLDivElement>document.getElementById('canvasContainer');
+  graph.resize(container?.clientWidth, container?.clientHeight - 2);
   graph.fitCenter();
 };
 
@@ -33,5 +33,5 @@ registerManageUdfEvents();
 registerEditUdfEvents();
 
 // 启动时仅画布可见
-switchView('canvasContainer');
+// switchView('canvasContainer');
 globalDag.init();
