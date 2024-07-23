@@ -185,8 +185,14 @@ export function addUdf(udf: Udf) {
         const li = <HTMLLIElement>event.target;
 
         rightClickMenu.style.display = 'block';
-        rightClickMenu.style.top = event.clientY + 'px';
-        rightClickMenu.style.left = event.clientX + 'px';
+
+        // 获取当前的滚动偏移量
+        var scrollTop = document.documentElement.scrollTop;
+        var scrollLeft = document.documentElement.scrollLeft;
+
+        rightClickMenu.style.top = (event.clientY + scrollTop) + 'px';
+        rightClickMenu.style.left = (event.clientX + scrollLeft) + 'px';
+        console.log(event);
 
         // 当点击页面其他地方时关闭菜单
         window.addEventListener('click', closeMenu);
