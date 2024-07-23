@@ -31,7 +31,7 @@ export function editUdf(fullUdfId: string) {
 
     // 渲染已有数据
     const udf = globalDag.getUdf(fullUdfId)!;
-    
+
     // 填充原来的udf名称
     let nameInput = <HTMLInputElement>document.querySelector(`#${viewId} #name`);
     nameInput.value = fullUdfId.substring(fullUdfId.lastIndexOf('.') + 1);

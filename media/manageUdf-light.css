@@ -113,3 +113,31 @@ body.vscode-light #manageUdfContainer .moving {
   #rightClickMenu li:hover {
     background-color: #e9e9e9;
   }
+
+
+
+  body.vscode-light #rightClickMenu {
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+
+}
+
+body.vscode-light #rightClickMenu ul {
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid #D4D4D4;
+    background-color: #FFFFFF;
+    list-style-type: none;
+
+}
+
+body.vscode-light #rightClickMenu ul li {
+    color: #6A6A6A;
+    border-radius: 5px;
+    padding: 5px 25px;
+}
+
+body.vscode-light #rightClickMenu ul li:hover {
+    color: #FFFFFF;
+    background: #0060C0;
+}

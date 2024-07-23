@@ -175,7 +175,6 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                                     <button type="button" id="add">Add</button>  
                                 </div>
                                 <div id="buttons">
-                                    <button type="button" id="delete"></button>
                                     <button type="button" id="quit">Quit</button>  
                                     <button type="submit" id="save">Save</button>  
                                 </div>

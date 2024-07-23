@@ -2,8 +2,7 @@
 
 import { graph } from "./graph";
 import { globalDag } from "./Dag";
-import switchView from "./switchView";
-import { editNode, registerEditNodeEvents } from "./editNode";
+import { registerEditNodeEvents } from "./editNode";
 import { registerManageUdfEvents } from "./manageUdf";
 import { registerEditUdfEvents } from "./editUdf";
 import { registerGraphEvents } from "./events";

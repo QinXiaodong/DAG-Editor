@@ -23,6 +23,9 @@ export function contextmenuClickCallback(v: string) {
 
 function dealNodeItems(e: { item: string; id: string }) {
     switch (e.item) {
+        case 'editNode':
+            editNode(e.id);
+            break;
         case 'newDownstreamNode':
             globalDag.addNewDownstreamNode(e.id);
             globalDag.post();
@@ -33,6 +36,10 @@ function dealNodeItems(e: { item: string; id: string }) {
             break;
         case 'manageUdf':
             manageUdf(e.id);
+            break;
+        case 'deleteNode':
+            globalDag.deleteNode(e.id);
+            globalDag.post();
             break;
         case 'changeNodeDisabledStatus':
             globalDag.changeNodeDisabledStatus(e.id);
@@ -92,6 +99,15 @@ export function getContextmenuCallback(e: any) {
 function getNodeMenuItems(e: { target: { id: any; }; }) {
     return [
         {
+            name: '编辑节点',
+            value: obj2str({
+                type: 'node',
+                item: 'editNode',
+                id: `${e.target.id}`,
+
+            }),
+        },
+        {
             name: '新建下游节点',
             value: obj2str({
                 type: 'node',
@@ -110,10 +126,10 @@ function getNodeMenuItems(e: { target: { id: any; }; }) {
             }),
         },
         {
-            name: '管理UDF',
+            name: '删除节点',
             value: obj2str({
                 type: 'node',
-                item: 'manageUdf',
+                item: 'deleteNode',
                 id: `${e.target.id}`,
 
             }),
@@ -124,6 +140,15 @@ function getNodeMenuItems(e: { target: { id: any; }; }) {
                 type: 'node',
                 item: 'changeNodeDisabledStatus',
                 id: `${e.target.id}`,
+            }),
+        },
+        {
+            name: '管理UDF',
+            value: obj2str({
+                type: 'node',
+                item: 'manageUdf',
+                id: `${e.target.id}`,
+
             }),
         },
     ];

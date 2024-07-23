@@ -8,8 +8,8 @@ export function registerGraphEvents() {
         graph.zoomBy(e.deltaY > 0 ? 0.8 : 1.25);
     });
 
-    graph.on('node:click', (e: any) => {
+/*     graph.on('node:click', (e: any) => {
         const nodeId = e.target.id;
         editNode(nodeId);
-    });
+    }); */
 }

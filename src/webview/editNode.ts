@@ -12,11 +12,6 @@ export function registerEditNodeEvents() {
         addProp(viewId, undefined);
     });
 
-    document.querySelector(`#${viewId} #delete`)?.addEventListener('click', function (event) {
-        event.preventDefault();
-        deleteNode();
-    });
-
     document.querySelector(`#${viewId} #quit`)?.addEventListener('click', function (event) {
         event.preventDefault();
         switchView("canvasContainer");
@@ -30,10 +25,6 @@ export function registerEditNodeEvents() {
 
 export function editNode(nodeId: string) {
     currentNodeId = nodeId;
-
-    const button = <HTMLButtonElement>document.querySelector(`#${viewId} #delete`)!;
-    button.textContent = `Delete Current Node`;
-
 
     // 渲染已有数据
     const node = globalDag.getNode(nodeId)!;
@@ -56,18 +47,6 @@ export function editNode(nodeId: string) {
     // editNode view变可见
     switchView(viewId);
     nameInput.focus();
-}
-
-function deleteNode() {
-    const button = <HTMLButtonElement>document.querySelector(`#${viewId} #delete`)!;
-
-    if (button.textContent !== `Delete Current Node?`) {
-        button.textContent = `Delete Current Node?`;
-        return;
-    }
-    globalDag.deleteNode(currentNodeId);
-    globalDag.post();
-    switchView('canvasContainer');
 }
 
 
