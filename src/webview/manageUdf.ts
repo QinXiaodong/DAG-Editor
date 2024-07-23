@@ -182,6 +182,12 @@ export function addUdf(udf: Udf) {
     item.addEventListener('contextmenu', function (event) {
         event.preventDefault(); // 阻止浏览器默认行为
         currentRightClickUdf = udf.name;
+        let disableUdfMenuItem = document.querySelector<HTMLLIElement>('#disableUdfMenuItem')!;
+        if (globalDag.isUdfDisabled(udf)) {
+            disableUdfMenuItem.textContent = '启用UDF';
+        } else {
+            disableUdfMenuItem.textContent = '禁用UDF';
+        }
         const li = <HTMLLIElement>event.target;
 
         rightClickMenu.style.display = 'block';
@@ -192,7 +198,6 @@ export function addUdf(udf: Udf) {
 
         rightClickMenu.style.top = (event.clientY + scrollTop) + 'px';
         rightClickMenu.style.left = (event.clientX + scrollLeft) + 'px';
-        console.log(event);
 
         // 当点击页面其他地方时关闭菜单
         window.addEventListener('click', closeMenu);

@@ -149,7 +149,7 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                 <ul>
                     <li data-action="edit-udf">编辑UDF</li>
                     <li data-action="delete-udf">删除UDF</li>
-                    <li data-action="disable-udf">禁用UDF</li>
+                    <li data-action="disable-udf" id='disableUdfMenuItem'></li>
                     <li data-action="manage-udf">管理子UDF</li>
                 </ul>
             </div>
