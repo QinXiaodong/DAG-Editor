@@ -6,8 +6,35 @@ import switchView from "./switchView";
 export const viewId = 'manageUdfContainer';
 export let currentNodeId = '';
 
+let rightClickMenu = document.querySelector<HTMLDivElement>('#rightClickMenu')!;
+let currentRightClickUdf: String;
 export function registerManageUdfEvents() {
 
+    // 获取所有菜单项
+    var menuItems = document.querySelectorAll('#rightClickMenu li');
+
+    // 遍历所有菜单项
+    menuItems.forEach(function (item) {
+        item.addEventListener('click', function (event) {
+            let et = <HTMLLIElement>event.target;
+            event.stopPropagation(); // 防止事件冒泡关闭菜单
+            var action = et.getAttribute('data-action');
+            switch (action) {
+                case 'action1':
+                    console.log(currentRightClickUdf + '执行动作1');
+                    break;
+                case 'action2':
+                    console.log(currentRightClickUdf + '执行动作2');
+                    break;
+                case 'action3':
+                    console.log(currentRightClickUdf + '执行动作3');
+                    break;
+                default:
+                    console.log(currentRightClickUdf + '未知动作');
+            }
+            closeMenu();
+        });
+    });
     // 为udf管理界面绑定事件
     document.querySelector(`#${viewId} #add`)?.addEventListener('click', function (event) {
         event.preventDefault();
@@ -77,6 +104,8 @@ export function registerManageUdfEvents() {
 }
 
 export function manageUdf(nodeId: string) {
+
+
     currentNodeId = nodeId;
 
     const nodeName = <HTMLDivElement>document.querySelector(`#${viewId} #nodeName`)!;
@@ -114,10 +143,34 @@ export function addUdf(udf: Udf) {
     }
     // 点击列表元素打开编辑UDF视图
     item.addEventListener('click', function (e) {
+        e.preventDefault(); // 阻止浏览器默认行为
         const li = <HTMLLIElement>e.target;
         editUdf(currentNodeId, udf.name);
     });
 
+
+    item.addEventListener('contextmenu', function (event) {
+        event.preventDefault(); // 阻止浏览器默认行为
+        currentRightClickUdf = udf.name;
+        const li = <HTMLLIElement>event.target;
+
+        rightClickMenu.style.display = 'block';
+        rightClickMenu.style.top = event.clientY + 'px';
+        rightClickMenu.style.left = event.clientX + 'px';
+
+        // 当点击页面其他地方时关闭菜单
+        window.addEventListener('click', closeMenu);
+
+
+
+
+    });
+
+
     item.append(udf.name);
     udfList.append(item);
+}
+function closeMenu() {
+    rightClickMenu.style.display = 'none';
+    window.removeEventListener('click', closeMenu);
 }

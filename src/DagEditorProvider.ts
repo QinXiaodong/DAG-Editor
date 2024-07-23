@@ -145,6 +145,13 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
               <title>DAG Editor</title>
             </head>
             <body>
+            <div id="rightClickMenu" style="display: none; position: absolute;">
+                <ul>
+                    <li data-action="action1">选项1</li>
+                    <li data-action="action2">选项2</li>
+                    <li data-action="action3">选项3</li>
+                </ul>
+            </div>
                 <div id='canvasContainer'></div>
                 <div id='editNodeContainer' class='view' style="display: none;">
                     <div id="outerDiv">

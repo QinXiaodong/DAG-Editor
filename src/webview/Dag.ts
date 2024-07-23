@@ -22,6 +22,7 @@ export interface Udf {
     name: string;
     className?: string;
     props?: Prop[];
+    udfs?: Udf[];
     disabled?: boolean;
 }
 

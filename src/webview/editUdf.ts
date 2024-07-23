@@ -16,6 +16,11 @@ export function registerEditUdfEvents() {
         deleteUdf();
     });
 
+    document.querySelector(`#${viewId} #delete`)?.addEventListener('click', function (event) {
+        event.preventDefault();
+        deleteUdf();
+    });
+
     document.querySelector(`#${viewId} #quit`)?.addEventListener('click', function (event) {
         event.preventDefault();
         switchView("manageUdfContainer");
@@ -28,6 +33,8 @@ export function registerEditUdfEvents() {
 
 
 }
+
+
 export function editUdf(nodeId: string, udfName: string) {
 
     currentNodeId = nodeId;

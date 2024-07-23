@@ -90,3 +90,26 @@ body.vscode-light #manageUdfContainer .moving {
     color: transparent;
     border: 1px dashed #ccc;
 }
+
+
+#rightClickMenu {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 5px;
+    list-style-type: none;
+    z-index: 1000;
+  }
+  
+  #rightClickMenu ul {
+    margin: 0;
+    padding: 0;
+  }
+  
+  #rightClickMenu li {
+    padding: 5px;
+    cursor: pointer;
+  }
+  
+  #rightClickMenu li:hover {
+    background-color: #e9e9e9;
+  }
