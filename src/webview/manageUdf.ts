@@ -4,10 +4,10 @@ import switchView from "./switchView";
 
 
 export const viewId = 'manageUdfContainer';
-export let currentNodeId = '';
+export let currentPrefix = '';
 
 let rightClickMenu = document.querySelector<HTMLDivElement>('#rightClickMenu')!;
-let currentRightClickUdf: String;
+let currentRightClickUdf: string;
 export function registerManageUdfEvents() {
 
     // 获取所有菜单项
@@ -20,14 +20,19 @@ export function registerManageUdfEvents() {
             event.stopPropagation(); // 防止事件冒泡关闭菜单
             var action = et.getAttribute('data-action');
             switch (action) {
-                case 'action1':
-                    console.log(currentRightClickUdf + '执行动作1');
+                case 'edit-udf':
+                    editUdf(`${currentPrefix}.${currentRightClickUdf}`);
                     break;
-                case 'action2':
-                    console.log(currentRightClickUdf + '执行动作2');
+                case 'delete-udf':
+                    globalDag.deleteUdf(`${currentPrefix}.${currentRightClickUdf}`);
+                    globalDag.post();
                     break;
-                case 'action3':
-                    console.log(currentRightClickUdf + '执行动作3');
+                case 'disable-udf':
+                    globalDag.changeUdfDisabledStatus(`${currentPrefix}.${currentRightClickUdf}`);
+                    globalDag.post();
+                    break;
+                case 'manage-udf':
+                    manageUdf(`${currentPrefix}.${currentRightClickUdf}`);
                     break;
                 default:
                     console.log(currentRightClickUdf + '未知动作');
@@ -38,14 +43,20 @@ export function registerManageUdfEvents() {
     // 为udf管理界面绑定事件
     document.querySelector(`#${viewId} #add`)?.addEventListener('click', function (event) {
         event.preventDefault();
-        globalDag.addNewUdf(currentNodeId);
+        globalDag.addNewUdf(currentPrefix);
         globalDag.post();
     });
 
     document.querySelector(`#${viewId} #return`)?.addEventListener('click', function (event) {
         event.preventDefault();
-        // 切换画布视图
-        switchView('canvasContainer');
+        if (currentPrefix.includes('.')) {
+            // 如果前缀是udf则返回上级udf的管理界面
+            manageUdf(currentPrefix.substring(0, currentPrefix.lastIndexOf('.')));
+
+        } else {
+            // 切换画布视图
+            switchView('canvasContainer');
+        }
     });
 
 
@@ -90,33 +101,58 @@ export function registerManageUdfEvents() {
 
     list.addEventListener('dragend', (e: DragEvent) => {
         currentLi.classList.remove('moving');
-        const node = globalDag.getNode(currentNodeId)!;
-        const newUdfs = [];
-        for (const li of Array.from(list.childNodes)) {
-            const udf = globalDag.getUdfFromNode(node, li.textContent!);
-            if (udf) {
-                newUdfs.push(udf);
+
+        if (currentPrefix.includes('.')) {
+            const outerUdf = globalDag.getUdf(currentPrefix)!;
+            const newUdfs = [];
+            for (const li of Array.from(list.childNodes)) {
+                const udf = globalDag.getUdfFromUdf(outerUdf, li.textContent!);
+                if (udf) {
+                    newUdfs.push(udf);
+                }
             }
+            outerUdf.udfs = newUdfs;
+
+        } else {
+            const node = globalDag.getNode(currentPrefix)!;
+            const newUdfs = [];
+            for (const li of Array.from(list.childNodes)) {
+                const udf = globalDag.getUdfFromNode(node, li.textContent!);
+                if (udf) {
+                    newUdfs.push(udf);
+                }
+            }
+            node.udfs = newUdfs;
+
         }
-        node.udfs = newUdfs;
         globalDag.post();
     });
 }
 
-export function manageUdf(nodeId: string) {
+export function manageUdf(prefix: string) {
 
 
-    currentNodeId = nodeId;
+    currentPrefix = prefix;
 
-    const nodeName = <HTMLDivElement>document.querySelector(`#${viewId} #nodeName`)!;
-    nodeName.textContent = currentNodeId;
+    const prefixDiv = <HTMLDivElement>document.querySelector(`#${viewId} #prefix`)!;
+    prefixDiv.textContent = currentPrefix;
 
-    const node = globalDag.getNode(currentNodeId)!;
     const innerDiv = <HTMLDivElement>document.querySelector(`#${viewId} #innerDiv`);
-    if (globalDag.isNodeDisabled(node)) {
-        innerDiv.style.borderStyle = 'dashed';
+    if (currentPrefix.includes('.')) {
+        const udf = globalDag.getUdf(currentPrefix)!;
+        if (globalDag.isUdfDisabled(udf)) {
+            innerDiv.style.borderStyle = 'dashed';
+        } else {
+            innerDiv.style.borderStyle = 'solid';
+        }
+
     } else {
-        innerDiv.style.borderStyle = 'solid';
+        const node = globalDag.getNode(currentPrefix)!;
+        if (globalDag.isNodeDisabled(node)) {
+            innerDiv.style.borderStyle = 'dashed';
+        } else {
+            innerDiv.style.borderStyle = 'solid';
+        }
     }
 
     // 清理历史的udf列表
@@ -124,7 +160,8 @@ export function manageUdf(nodeId: string) {
     udfList.innerHTML = '';
 
     // 填充当前节点下的所有udf name
-    for (const udf of globalDag.getNode(currentNodeId)?.udfs || []) {
+    const udfs = (currentPrefix.includes('.') ? globalDag.getUdf(currentPrefix) : globalDag.getNode(currentPrefix))?.udfs;
+    for (const udf of udfs || []) {
         addUdf(udf);
     }
 
@@ -141,13 +178,6 @@ export function addUdf(udf: Udf) {
     if (globalDag.isUdfDisabled(udf)) {
         item.style.borderStyle = 'dashed';
     }
-    // 点击列表元素打开编辑UDF视图
-    item.addEventListener('click', function (e) {
-        e.preventDefault(); // 阻止浏览器默认行为
-        const li = <HTMLLIElement>e.target;
-        editUdf(currentNodeId, udf.name);
-    });
-
 
     item.addEventListener('contextmenu', function (event) {
         event.preventDefault(); // 阻止浏览器默认行为
@@ -160,9 +190,6 @@ export function addUdf(udf: Udf) {
 
         // 当点击页面其他地方时关闭菜单
         window.addEventListener('click', closeMenu);
-
-
-
 
     });
 

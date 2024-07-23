@@ -80,13 +80,33 @@ export class DagClass {
         }
         return undefined;
     }
-    getUdf(nodeName: string, udfName: string): Udf | undefined {
-        for (const udf of this.getNode(nodeName)?.udfs || []) {
-            if (udf.name === udfName) {
-                return udf;
+    getUdfFromUdf(udf: Udf, udfName: string) {
+        for (const u of udf.udfs || []) {
+            if (u.name === udfName) {
+                return u;
             }
         }
         return undefined;
+    }
+    getUdf(fullUdfId: string): Udf | undefined {
+        let lastIndexOfDot = fullUdfId.lastIndexOf('.');
+        let prefix = fullUdfId.substring(0, lastIndexOfDot);
+        let udfName = fullUdfId.substring(lastIndexOfDot + 1);
+        if (prefix.includes('.')) {
+            let udf = this.getUdf(prefix)!;
+            return this.getUdfFromUdf(udf, udfName);
+
+        } else {
+            return this.getUdfFromNode(this.getNode(prefix)!, udfName);
+        }
+    }
+
+    getNodeOrUdf(fullId: string): Node | Udf | undefined {
+        if (fullId.includes('.')) {
+            return this.getUdf(fullId);
+        } else {
+            return this.getNode(fullId);
+        }
     }
 
     addNewNode() {
@@ -190,6 +210,16 @@ export class DagClass {
             node.disabled = true;
         }
     }
+
+    changeUdfDisabledStatus(fullUdfId: string) {
+        const udf = this.getUdf(fullUdfId)!;
+        if (udf.disabled && udf.disabled === true) {
+            udf.disabled = undefined;
+        } else {
+            udf.disabled = true;
+        }
+    }
+
     changeNodeName(oldName: string, newName: string) {
         this.getNodes()!.forEach(node => {
             if (node.name === oldName) {
@@ -202,27 +232,58 @@ export class DagClass {
         });
     }
 
-    addNewUdf(nodeId: string): string {
-        const node = globalDag.getNode(nodeId)!;
-        let id = 0;
-        while (globalDag.getUdfFromNode(node, `newUdf-${id}`)) {
-            id++;
+    addNewUdf(prefix: string): string {
+
+        if (prefix.includes('.')) {
+            const udf = globalDag.getUdf(prefix)!;
+            let id = 0;
+
+            while (globalDag.getUdfFromUdf(udf, `newUdf-${id}`)) {
+                id++;
+            }
+            let newUdfName = `newUdf-${id}`;
+            udf.udfs = Array.isArray(udf.udfs) ? udf.udfs : [];
+            udf.udfs.push({ name: newUdfName });
+            return newUdfName;
+        } else {
+            const node = globalDag.getNode(prefix)!;
+            let id = 0;
+
+            while (globalDag.getUdfFromNode(node, `newUdf-${id}`)) {
+                id++;
+            }
+            let newUdfName = `newUdf-${id}`;
+            node.udfs = Array.isArray(node.udfs) ? node.udfs : [];
+            node.udfs.push({ name: newUdfName });
+            return newUdfName;
         }
-        let newUdfName = `newUdf-${id}`;
-        node.udfs = Array.isArray(node.udfs) ? node.udfs : [];
-        node.udfs.push({ name: newUdfName });
-        return newUdfName;
+
     }
 
-    deleteUdf(nodeId: string, udfName: string) {
-        const node = globalDag.getNode(nodeId)!;
-        let udfs = [];
-        for (const udf of node.udfs || []) {
-            if (udf.name !== udfName) {
-                udfs.push(udf);
+    deleteUdf(fullUdfId: string) {
+        let lastIndexOfDot = fullUdfId.lastIndexOf('.');
+        let prefix = fullUdfId.substring(0, lastIndexOfDot);
+        let udfName = fullUdfId.substring(lastIndexOfDot + 1);
+        if (prefix.includes('.')) {
+            let udfs = [];
+            const outerUdf = this.getUdf(prefix)!;
+            for (const udf of outerUdf.udfs || []) {
+                if (udf.name !== udfName) {
+                    udfs.push(udf);
+                }
             }
+            outerUdf.udfs = udfs.length > 0 ? udfs : undefined;
+        } else {
+
+            let udfs = [];
+            const node = this.getNode(prefix)!;
+            for (const udf of node.udfs || []) {
+                if (udf.name !== udfName) {
+                    udfs.push(udf);
+                }
+            }
+            node.udfs = udfs.length > 0 ? udfs : undefined;
         }
-        node.udfs = udfs.length > 0 ? udfs : undefined;
     }
 
     post() {

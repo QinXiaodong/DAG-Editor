@@ -1,7 +1,8 @@
 import { Graph, GraphData, IPointerEvent, register } from "@antv/g6";
 import { contextmenuClickCallback, getContextmenuCallback } from "./contextmenuHelper";
 import { globalDag } from "./Dag";
-import { addUdf, currentNodeId, viewId } from "./manageUdf";
+import { addUdf, currentPrefix, viewId } from "./manageUdf";
+import { glob } from "glob";
 
 export const graph = new Graph({
     container: 'canvasContainer',
@@ -107,7 +108,8 @@ function getGraphData(): GraphData {
     udfList.innerHTML = '';
 
     // 填充当前节点下的所有udf name
-    for (const udf of globalDag.getNode(currentNodeId)?.udfs || []) {
+    const udfs = (currentPrefix.includes('.') ? globalDag.getUdf(currentPrefix) : globalDag.getNode(currentPrefix))?.udfs;
+    for (const udf of udfs || []) {
         addUdf(udf);
     }
 

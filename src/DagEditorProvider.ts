@@ -147,9 +147,10 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
             <body>
             <div id="rightClickMenu" style="display: none; position: absolute;">
                 <ul>
-                    <li data-action="action1">选项1</li>
-                    <li data-action="action2">选项2</li>
-                    <li data-action="action3">选项3</li>
+                    <li data-action="edit-udf">编辑UDF</li>
+                    <li data-action="delete-udf">删除UDF</li>
+                    <li data-action="disable-udf">禁用UDF</li>
+                    <li data-action="manage-udf">管理子UDF</li>
                 </ul>
             </div>
                 <div id='canvasContainer'></div>
@@ -185,7 +186,7 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                 <div id="manageUdfContainer" class="view" style="display: none;">
                     <div id="outerDiv">
                         <div id="innerDiv">
-                            <div id="nodeName"></div>
+                            <div id="prefix"></div>
                             <div id="udfs"><ul></ul></div>   
                             <div id="buttons">
                                 <button type="button" id="add">Add</button>
@@ -215,11 +216,7 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                                     <button type="button" id="add">Add</button>  
                                 </div>
                                 <br>
-                                <div>
-                                    <div><label>Enabled</label><input type="checkbox" id="enable"></div>
-                                <div>
                                 <div id="buttons">
-                                    <button type="button" id="delete"></button>
                                     <button type="button" id="quit">Quit</button>  
                                     <button type="submit" id="save">Save</button>  
                                 </div>

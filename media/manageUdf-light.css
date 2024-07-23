@@ -17,7 +17,7 @@ body.vscode-light #manageUdfContainer #innerDiv {
     /* margin-bottom: 50px; */
 }
 
-body.vscode-light #manageUdfContainer #nodeName {
+body.vscode-light #manageUdfContainer #prefix {
     margin: 20px;
     text-align: center;
     font-size: large;
