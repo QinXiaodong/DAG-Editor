@@ -27,7 +27,7 @@ export function addProp(viewId: string, prop: Prop | undefined) {
     typeSelect.className = 'propType';
 
     // 添加选项  
-    let option = document.createElement('option');
+    let option;
 
     option = document.createElement('option');
     option.value = 'String';
@@ -45,6 +45,11 @@ export function addProp(viewId: string, prop: Prop | undefined) {
     option.text = 'Long';
     typeSelect.appendChild(option);
 
+    option = document.createElement('option');
+    option.value = 'Double';
+    option.text = 'Double';
+
+    typeSelect.appendChild(option);
     option = document.createElement('option');
     option.value = 'Boolean';
     option.text = 'Boolean';
