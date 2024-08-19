@@ -1,8 +1,7 @@
-import { Graph, GraphData, IPointerEvent, register } from "@antv/g6";
+import { Graph, GraphData } from "@antv/g6";
 import { contextmenuClickCallback, getContextmenuCallback } from "./contextmenuHelper";
 import { globalDag } from "./Dag";
 import { addUdf, currentPrefix, viewId } from "./manageUdf";
-import { glob } from "glob";
 
 export const graph = new Graph({
     container: 'canvasContainer',
@@ -130,7 +129,7 @@ function getGraphData(): GraphData {
                 labelFill: isDark() ? '#CCCCCC' : '#616161',
                 labelFillOpacity: 1,
                 labelPlacement: 'center',
-                labelText: node.name,
+                labelText: node.udfs != undefined && node.udfs.length > 0 ? `${node.name} (${node.udfs.length})` : `${node.name}`,
                 labelMaxWidth: '90%',
                 labelWordWrap: true,
                 labelFontSize: 16,

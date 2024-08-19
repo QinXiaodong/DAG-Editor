@@ -11,14 +11,14 @@ let currentRightClickUdf: string;
 export function registerManageUdfEvents() {
 
     // 获取所有菜单项
-    var menuItems = document.querySelectorAll('#rightClickMenu li');
+    let menuItems = document.querySelectorAll('#rightClickMenu li');
 
     // 遍历所有菜单项
     menuItems.forEach(function (item) {
         item.addEventListener('click', function (event) {
             let et = <HTMLLIElement>event.target;
             event.stopPropagation(); // 防止事件冒泡关闭菜单
-            var action = et.getAttribute('data-action');
+            let action = et.getAttribute('data-action');
             switch (action) {
                 case 'edit-udf':
                     editUdf(`${currentPrefix}.${currentRightClickUdf}`);
@@ -188,13 +188,12 @@ export function addUdf(udf: Udf) {
         } else {
             disableUdfMenuItem.textContent = '禁用UDF';
         }
-        const li = <HTMLLIElement>event.target;
 
         rightClickMenu.style.display = 'block';
 
         // 获取当前的滚动偏移量
-        var scrollTop = document.documentElement.scrollTop;
-        var scrollLeft = document.documentElement.scrollLeft;
+        let scrollTop = document.documentElement.scrollTop;
+        let scrollLeft = document.documentElement.scrollLeft;
 
         rightClickMenu.style.top = (event.clientY + scrollTop) + 'px';
         rightClickMenu.style.left = (event.clientX + scrollLeft) + 'px';
@@ -205,7 +204,7 @@ export function addUdf(udf: Udf) {
     });
 
 
-    item.append(udf.name);
+    item.append(udf.udfs != undefined && udf.udfs.length > 0 ? `${udf.name} (${udf.udfs.length})` : udf.name);
     udfList.append(item);
 }
 function closeMenu() {
