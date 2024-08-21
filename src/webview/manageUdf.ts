@@ -6,6 +6,10 @@ import switchView from "./switchView";
 export const viewId = 'manageUdfContainer';
 export let currentPrefix = '';
 
+export function setCurrentPrefix(prefix: string) {
+    currentPrefix = prefix;
+}
+
 let rightClickMenu = document.querySelector<HTMLDivElement>('#rightClickMenu')!;
 let currentRightClickUdf: string;
 export function registerManageUdfEvents() {
@@ -130,7 +134,6 @@ export function registerManageUdfEvents() {
 }
 
 export function manageUdf(prefix: string) {
-
 
     currentPrefix = prefix;
 

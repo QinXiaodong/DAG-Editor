@@ -1,7 +1,10 @@
 import { Graph, GraphData } from "@antv/g6";
 import { contextmenuClickCallback, getContextmenuCallback } from "./contextmenuHelper";
 import { globalDag } from "./Dag";
-import { addUdf, currentPrefix, viewId } from "./manageUdf";
+import { addUdf, currentPrefix, manageUdf, setCurrentPrefix, viewId } from "./manageUdf";
+import switchView, { currentViewId } from "./switchView";
+import { currentNodeId, editNode } from "./editNode";
+import { currentFullUdfId, editUdf } from "./editUdf";
 
 export const graph = new Graph({
     container: 'canvasContainer',
@@ -80,6 +83,40 @@ export const graph = new Graph({
  * Render the document in the webview.
  */
 export function updateContent() {
+
+    // 清理历史的udf列表
+    const udfList = document.querySelector(`#${viewId} ul`)!;
+    udfList.innerHTML = '';
+
+    // 填充当前节点下的所有udf name
+    // const udfs = (currentPrefix.includes('.') ? globalDag.getUdf(currentPrefix) : globalDag.getNode(currentPrefix))?.udfs;
+    // for (const udf of udfs || []) {
+    //     addUdf(udf);
+    // }
+
+    if (currentViewId === 'editNodeContainer') {
+        if (globalDag.getNode(currentNodeId)) {
+            editNode(currentNodeId);
+        } else {
+            switchView('canvasContainer');
+        }
+    } else if (currentViewId === 'editUdfContainer') {
+        if (globalDag.getUdf(currentFullUdfId)) {
+            editUdf(currentFullUdfId);
+        } else {
+            switchView('manageUdfContainer');
+        }
+    } else if (currentViewId === 'manageUdfContainer') {
+        while (currentPrefix.includes('.') && globalDag.getUdf(currentPrefix) === undefined) {
+            setCurrentPrefix(currentPrefix.substring(0, currentPrefix.lastIndexOf('.')));
+        }
+        if (currentPrefix.includes('.') || globalDag.getNode(currentPrefix)) {
+            manageUdf(currentPrefix);
+        } else {
+            switchView('canvasContainer');
+        }
+    }
+
     // 根据json重绘Graph
     graph.setData(getGraphData());
     if (isFirst) {
@@ -100,17 +137,6 @@ function getGraphData(): GraphData {
         edges: [],
         combos: []
     };
-
-
-    // 清理历史的udf列表
-    const udfList = document.querySelector(`#${viewId} ul`)!;
-    udfList.innerHTML = '';
-
-    // 填充当前节点下的所有udf name
-    const udfs = (currentPrefix.includes('.') ? globalDag.getUdf(currentPrefix) : globalDag.getNode(currentPrefix))?.udfs;
-    for (const udf of udfs || []) {
-        addUdf(udf);
-    }
 
     for (const node of globalDag.getNodes() || []) {
 

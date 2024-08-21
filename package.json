@@ -8,7 +8,7 @@
   },
   "publisher": "QinXiaodong",
   "icon": "assets/icon.png",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "engines": {
     "vscode": "^1.75.0"
   },

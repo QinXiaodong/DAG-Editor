@@ -3,7 +3,7 @@ import { addProp, extractProps } from "./addProp";
 import switchView from "./switchView";
 
 const viewId = 'editUdfContainer';
-let currentFullUdfId = '';
+export let currentFullUdfId = '';
 export function registerEditUdfEvents() {
     // 为节点编辑界面绑定事件
     document.querySelector(`#${viewId} #add`)?.addEventListener('click', function (event) {

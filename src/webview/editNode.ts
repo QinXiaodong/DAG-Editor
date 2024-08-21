@@ -3,7 +3,7 @@ import { addProp, extractProps } from "./addProp";
 import switchView from "./switchView";
 
 const viewId = 'editNodeContainer';
-let currentNodeId = '';
+export let currentNodeId = '';
 export function registerEditNodeEvents() {
 
     // 为节点编辑界面绑定事件
