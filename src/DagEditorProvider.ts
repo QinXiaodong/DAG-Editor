@@ -6,7 +6,6 @@ import { Dag } from "./webview/Dag";
 export class DagEditorProvider implements vscode.CustomTextEditorProvider {
 
     private static newDagFileId = 1;
-    private lastDocumentVersions = new Map();
     public static register(context: vscode.ExtensionContext): vscode.Disposable {
 
         // 注册新建DAG命令，支持在control pallete中执行
@@ -25,6 +24,10 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
         return vscode.window.registerCustomEditorProvider(
             "dag-editor",
             new DagEditorProvider(context),
+            {
+                webviewOptions: { enableFindWidget: true, retainContextWhenHidden: true },
+                supportsMultipleEditorsPerDocument: true
+            }
         );
 
     }
@@ -47,10 +50,7 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
 
         // 文档内容发生变化时主动向前端更新数据
         const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-            if (e.document.uri.toString() === document.uri.toString() && e.document.version > this.lastDocumentVersions.get(e.document.uri)) {
-                this.lastDocumentVersions.set(e.document.uri, e.document.version);
-                updateWebview();
-            }
+            updateWebview();
         });
 
         // Make sure we get rid of the listener when our editor is closed.
@@ -64,7 +64,6 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
             updateTextDocument(dag);
         });
 
-        this.lastDocumentVersions.set(document.uri, 0);
         // Setup initial content for the webview
         webviewPanel.webview.options = {
             // Enable JavaScript in the webview

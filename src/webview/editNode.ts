@@ -52,7 +52,11 @@ export function editNode(nodeId: string) {
 
 function saveNode() {
 
-    const node = globalDag.getNode(currentNodeId)!;
+    const node = globalDag.getNode(currentNodeId);
+    if (node === undefined) {
+        switchView('canvasContainer');
+        return;
+    }
     const nameInput = <HTMLInputElement>document.querySelector(`#${viewId} #name`);
     document.querySelector(`#${viewId} #input-group1 #alert`)?.remove();
 

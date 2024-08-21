@@ -57,6 +57,10 @@ export function editUdf(fullUdfId: string) {
 function saveUdf() {
 
     const udf = globalDag.getUdf(currentFullUdfId)!;
+    if (udf === undefined) {
+        switchView('canvasContainer');
+        return;
+    }
 
     const nameInput = <HTMLInputElement>document.querySelector(`#${viewId} #name`);
 

@@ -34,16 +34,7 @@ export class DagClass {
         nodes: [],
     };
 
-    init() {
-        const state = vscode.getState();
-        if (state) {
-            this.setDag(state);
-            updateContent();
-        }
-
-    }
     update(dag: Dag): void {
-        vscode.setState(dag);
         this.setDag(dag);
         updateContent();
     }
@@ -80,8 +71,8 @@ export class DagClass {
         }
         return undefined;
     }
-    getUdfFromUdf(udf: Udf, udfName: string) {
-        for (const u of udf.udfs || []) {
+    getUdfFromUdf(udf: Udf | undefined, udfName: string) {
+        for (const u of udf?.udfs || []) {
             if (u.name === udfName) {
                 return u;
             }
@@ -93,9 +84,7 @@ export class DagClass {
         let prefix = fullUdfId.substring(0, lastIndexOfDot);
         let udfName = fullUdfId.substring(lastIndexOfDot + 1);
         if (prefix.includes('.')) {
-            let udf = this.getUdf(prefix)!;
-            return this.getUdfFromUdf(udf, udfName);
-
+            return this.getUdfFromUdf(this.getUdf(prefix), udfName);
         } else {
             return this.getUdfFromNode(this.getNode(prefix)!, udfName);
         }

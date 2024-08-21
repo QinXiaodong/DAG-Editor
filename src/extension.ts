@@ -1,4 +1,4 @@
-import { commands, ExtensionContext } from "vscode";
+import { ExtensionContext } from "vscode";
 import { DagEditorProvider } from "./DagEditorProvider";
 
 export function activate(context: ExtensionContext) {

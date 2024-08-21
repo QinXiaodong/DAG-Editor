@@ -30,7 +30,3 @@ registerGraphEvents();
 registerEditNodeEvents();
 registerManageUdfEvents();
 registerEditUdfEvents();
-
-// 启动时仅画布可见
-// switchView('canvasContainer');
-globalDag.init();
