@@ -32,7 +32,7 @@ registerEditNodeEvents();
 registerManageUdfEvents();
 registerEditUdfEvents();
 
-
+// 增加ESC键实现返回功能
 document.addEventListener('keydown', function (event) {
   // keyCode用于检查按键代码（在现代浏览器中可能被key替代）
   if (event.key === 'Escape') {

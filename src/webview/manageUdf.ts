@@ -106,7 +106,7 @@ export function registerManageUdfEvents() {
             const outerUdf = globalDag.getUdf(currentPrefix)!;
             const newUdfs = [];
             for (const li of Array.from(list.childNodes)) {
-                const udf = globalDag.getUdfFromUdf(outerUdf, li.textContent!);
+                const udf = globalDag.getUdfFromUdf(outerUdf, li.textContent!.split(' ')[0]!);
                 if (udf) {
                     newUdfs.push(udf);
                 }
@@ -117,7 +117,7 @@ export function registerManageUdfEvents() {
             const node = globalDag.getNode(currentPrefix)!;
             const newUdfs = [];
             for (const li of Array.from(list.childNodes)) {
-                const udf = globalDag.getUdfFromNode(node, li.textContent!);
+                const udf = globalDag.getUdfFromNode(node, li.textContent!.split(' ')[0]);
                 if (udf) {
                     newUdfs.push(udf);
                 }
