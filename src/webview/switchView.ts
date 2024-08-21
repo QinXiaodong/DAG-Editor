@@ -1,6 +1,8 @@
 
+export let currentViewId = '';
 // 指定viewId 的div可见，其他div都不可见
 export default function switchView(viewId: string) {
+    currentViewId = viewId;
     for (const view of document.querySelectorAll('body>div.view')) {
         (<HTMLDivElement>view).style.display = 'none';
     }
