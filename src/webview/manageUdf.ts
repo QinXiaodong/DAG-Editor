@@ -207,7 +207,7 @@ export function addUdf(udf: Udf) {
     });
 
 
-    item.append(udf.udfs != undefined && udf.udfs.length > 0 ? `${udf.name} (${udf.udfs.length})` : udf.name);
+    item.append(udf.udfs !== undefined && udf.udfs.length > 0 ? `${udf.name} (${udf.udfs.length})` : udf.name);
     udfList.append(item);
 }
 function closeMenu() {

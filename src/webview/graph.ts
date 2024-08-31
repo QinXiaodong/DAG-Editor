@@ -1,7 +1,7 @@
 import { Graph, GraphData } from "@antv/g6";
 import { contextmenuClickCallback, getContextmenuCallback } from "./contextmenuHelper";
 import { globalDag } from "./Dag";
-import { addUdf, currentPrefix, manageUdf, setCurrentPrefix, viewId } from "./manageUdf";
+import { currentPrefix, manageUdf, setCurrentPrefix, viewId } from "./manageUdf";
 import switchView, { currentViewId } from "./switchView";
 import { currentNodeId, editNode } from "./editNode";
 import { currentFullUdfId, editUdf } from "./editUdf";
@@ -155,7 +155,7 @@ function getGraphData(): GraphData {
                 labelFill: isDark() ? '#CCCCCC' : '#616161',
                 labelFillOpacity: 1,
                 labelPlacement: 'center',
-                labelText: node.udfs != undefined && node.udfs.length > 0 ? `${node.name} (${node.udfs.length})` : `${node.name}`,
+                labelText: node.udfs !== undefined && node.udfs.length > 0 ? `${node.name} (${node.udfs.length})` : `${node.name}`,
                 labelMaxWidth: '90%',
                 labelWordWrap: true,
                 labelFontSize: 16,

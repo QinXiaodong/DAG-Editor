@@ -27,11 +27,11 @@ function dealNodeItems(e: { item: string; id: string }) {
             editNode(e.id);
             break;
         case 'newDownstreamNode':
-            globalDag.addNewDownstreamNode(e.id);
+            globalDag.focusNode(globalDag.addNewDownstreamNode(e.id));
             globalDag.post();
             break;
         case 'newUpstreamNode':
-            globalDag.addNewUpstreamNode(e.id);
+            globalDag.focusNode(globalDag.addNewUpstreamNode(e.id));
             globalDag.post();
             break;
         case 'manageUdf':
@@ -56,6 +56,10 @@ function dealEdgeItems(e: { item: string; source: string; target: string; }) {
             globalDag.deleteEdge(e.source, e.target);
             globalDag.post();
             break;
+        case 'insertNewNode':
+            globalDag.insertNewNode(e.source, e.target);
+            globalDag.post();
+            break;
         default:
             break;
     }
@@ -64,7 +68,7 @@ function dealEdgeItems(e: { item: string; source: string; target: string; }) {
 function dealCanvasItems(e: { item: string; }) {
     switch (e.item) {
         case 'newNode':
-            globalDag.addNewNode();
+            globalDag.focusNode(globalDag.addNewNode());
             globalDag.post();
             break;
         case 'fitView':
@@ -161,6 +165,15 @@ function getEdgeMenuItems(e: any) {
             value: obj2str({
                 type: 'edge',
                 item: 'deleteEdge',
+                source: e.target.sourceNode.id,
+                target: e.target.targetNode.id,
+            })
+        },
+        {
+            name: '插入新节点',
+            value: obj2str({
+                type: 'edge',
+                item: 'insertNewNode',
                 source: e.target.sourceNode.id,
                 target: e.target.targetNode.id,
             })

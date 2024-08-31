@@ -98,7 +98,7 @@ export class DagClass {
         }
     }
 
-    addNewNode() {
+    addNewNode(): string {
         let id = 0;
         while (this.getNode(`newNode-${id}`)) {
             id++;
@@ -110,7 +110,11 @@ export class DagClass {
 
 
         graph.addNodeData([{ id: `newNode-${id}`, style: { fillOpacity: 0 } }]);
-        graph.render().then(() => graph.focusElement(`newNode-${id}`));
+        return `newNode-${id}`;
+    }
+
+    focusNode(name: string) {
+        graph.render().then(() => graph.focusElement(name));
         // 新增节点后视角移动到新节点
     }
 
@@ -137,6 +141,13 @@ export class DagClass {
         }
     }
 
+    insertNewNode(source: string, target: string) {
+        this.deleteEdge(source, target);
+        let newNodeId = this.addNewNode();
+        this.addEdge(source, newNodeId);
+        this.addEdge(newNodeId, target);
+    }
+    
     addNewDownstreamNode(nodeId: string) {
         let id = 0;
         while (this.getNode(`newNode-${id}`)) {
@@ -145,8 +156,7 @@ export class DagClass {
         this.getNodes()!.push({ name: `newNode-${id}`, preNodes: [nodeId] });
 
         graph.addData({ nodes: [{ id: `newNode-${id}`, style: { fillOpacity: 0 } }], edges: [{ source: nodeId, target: `newNode-${id}`, style: { opacity: 0 } }] });
-        graph.render().then(() => graph.focusElement(`newNode-${id}`));
-        // 新增节点后视角移动到新节点
+        return `newNode-${id}`;
 
     }
     addNewUpstreamNode(nodeId: string) {
@@ -162,9 +172,7 @@ export class DagClass {
         targetNode.preNodes.push(`newNode-${id}`);
 
         graph.addData({ nodes: [{ id: `newNode-${id}`, style: { fillOpacity: 0 } }], edges: [{ source: `newNode-${id}`, target: nodeId, style: { opacity: 0 } }] });
-        graph.render().then(() => graph.focusElement(`newNode-${id}`));
-        // 新增节点后视角移动到新节点
-
+        return `newNode-${id}`;
     }
     deleteNode(nodeId: string) {
         let newNodes: Node[] = [];
