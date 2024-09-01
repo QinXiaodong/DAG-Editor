@@ -50,7 +50,10 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
 
         // 文档内容发生变化时主动向前端更新数据
         const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-            updateWebview();
+            // 编辑其他文件也会触发当前事件
+            if (e.document.fileName === document.fileName) {
+                updateWebview();
+            }
         });
 
         // Make sure we get rid of the listener when our editor is closed.
