@@ -8,11 +8,13 @@
   },
   "publisher": "QinXiaodong",
   "icon": "assets/icon.png",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "engines": {
     "vscode": "^1.75.0"
   },
-  "activationEvents": [],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "customEditors": [

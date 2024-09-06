@@ -40,7 +40,7 @@ document.addEventListener('keydown', function (event) {
     if (currentViewId === 'editNodeContainer') {
       switchView('canvasContainer');
     } else if (currentViewId === 'editUdfContainer') {
-      switchView("manageUdfContainer");
+      manageUdf(currentPrefix)
     } else if (currentViewId === 'manageUdfContainer') {
       if (currentPrefix.includes('.')) {
         // 如果前缀是udf则返回上级udf的管理界面
