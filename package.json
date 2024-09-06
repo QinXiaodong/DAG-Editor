@@ -12,9 +12,7 @@
   "engines": {
     "vscode": "^1.75.0"
   },
-  "activationEvents": [
-    "*"
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "customEditors": [
