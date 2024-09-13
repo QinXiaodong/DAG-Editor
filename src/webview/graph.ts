@@ -140,6 +140,7 @@ function getGraphData(): GraphData {
 
     for (const node of globalDag.getNodes() || []) {
 
+        let labelText = node.udfs !== undefined && node.udfs.length > 0 ? `${node.name} (${node.udfs.length})` : `${node.name}`;
         // 渲染节点
         data.nodes!.push({
             id: node.name,
@@ -155,12 +156,12 @@ function getGraphData(): GraphData {
                 labelFill: isDark() ? '#CCCCCC' : '#616161',
                 labelFillOpacity: 1,
                 labelPlacement: 'center',
-                labelText: node.udfs !== undefined && node.udfs.length > 0 ? `${node.name} (${node.udfs.length})` : `${node.name}`,
+                labelText: labelText,
                 labelMaxWidth: '90%',
                 labelWordWrap: true,
                 labelFontSize: 16,
                 labelFontStyle: 'italic',
-                size: [Math.max(180, 11 * node.name.length), 40],
+                size: [Math.max(180, 11 * labelText.length), 40],
             },
 
             states: [globalDag.isNodeDisabled(node) ? 'disabled' : 'default']
