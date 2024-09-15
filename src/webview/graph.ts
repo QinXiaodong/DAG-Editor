@@ -2,7 +2,7 @@ import { Graph, GraphData } from "@antv/g6";
 import { contextmenuClickCallback, getContextmenuCallback } from "./contextmenuHelper";
 import { globalDag } from "./Dag";
 import { currentPrefix, manageUdf, setCurrentPrefix, viewId } from "./manageUdf";
-import switchView, { currentViewId } from "./switchView";
+import { currentViewId } from "./switchView";
 import { currentId, edit } from "./edit";
 
 export const graph = new Graph({

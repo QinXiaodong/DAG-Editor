@@ -1,4 +1,3 @@
-import { getNonce } from "../utilities/getNonce";
 import { Prop, globalDag } from "./Dag";
 import switchView from "./switchView";
 
@@ -118,9 +117,9 @@ export function save() {
 
 
 function addProp(prop: Prop | undefined, id: string) {
-    if(prop===undefined){
-        lastPropElement='nameInput';
-        lastPropId=id;
+    if (prop === undefined) {
+        lastPropElement = 'nameInput';
+        lastPropId = id;
     }
     // 获取属性容器  
     const propsContainer = <HTMLDivElement>document.querySelector(`#${viewId} #props`)!;
