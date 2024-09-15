@@ -1,28 +1,28 @@
-body.vscode-dark #editUdfContainer {
+body.vscode-dark #editContainer {
     align-items: center;
 }
 
-body.vscode-dark #editUdfContainer #outerDiv {
+body.vscode-dark #editContainer #outerDiv {
     margin-top: 5%;
     margin-left: 10%;
     margin-right: 10%;
     padding-bottom: 10%;
 }
 
-body.vscode-dark #editUdfContainer #innerDiv {
+body.vscode-dark #editContainer #innerDiv {
     display: flex;
     flex-direction: column;
 }
 
 
-body.vscode-dark #editUdfContainer #input-group1 {
+body.vscode-dark #editContainer #input-group1 {
     padding: 12px;
-    /* display: flex;
-    flex-direction: column; */
+    display: flex;
+    flex-direction: column;
     background-color: #252728;
 }
 
-body.vscode-dark #editUdfContainer #input-group1 input {
+body.vscode-dark #editContainer #input-group1 input {
     /* 修改宽度和高度 */
 
     margin-top: 10px;
@@ -43,21 +43,21 @@ body.vscode-dark #editUdfContainer #input-group1 input {
     padding: 0 10px;
 }
 
-body.vscode-dark #editUdfContainer #input-group2 {
+body.vscode-dark #editContainer #input-group2 {
     padding: 12px;
     background-color: #252728;
 }
 
-body.vscode-dark #editUdfContainer #input-group2 #propsLabel {
+body.vscode-dark #editContainer #input-group2 #propsLabel {
     margin-bottom: 10px;
 }
 
-body.vscode-dark #editUdfContainer #input-group2 #props {
+body.vscode-dark #editContainer #input-group2 #props {
     display: flex;
     flex-direction: column;
 }
 
-body.vscode-dark #editUdfContainer #input-group2 #props input {
+body.vscode-dark #editContainer #input-group2 #props input {
     /* 修改宽度和高度 */
 
     margin: 5px;
@@ -77,7 +77,7 @@ body.vscode-dark #editUdfContainer #input-group2 #props input {
     padding: 0 10px;
 }
 
-body.vscode-dark #editUdfContainer button {
+body.vscode-dark #editContainer button {
     border: none;
     border-radius: 2px;
     box-shadow: none;
@@ -90,18 +90,18 @@ body.vscode-dark #editUdfContainer button {
     margin-bottom: 5px;
 }
 
-body.vscode-dark #editUdfContainer button:hover {
+body.vscode-dark #editContainer button:hover {
     background-color: #1177BB;
 }
 
-body.vscode-dark #editUdfContainer button:focus {
+body.vscode-dark #editContainer button:focus {
     background-color: #1177BB;
     outline-color: #1177BB;
     outline-style: double;
     outline-width: 3px;
 }
 
-body.vscode-dark #editUdfContainer select {
+body.vscode-dark #editContainer select {
     margin: 5px;
     background-color: #3C3C3C;
     width: 70px;
@@ -114,23 +114,17 @@ body.vscode-dark #editUdfContainer select {
     border-radius: 2px;
 }
 
-body.vscode-dark #editUdfContainer #buttons {
+body.vscode-dark #editContainer #buttons {
     margin-top: 10px;
     padding: 12px;
 }
 
-body.vscode-dark #editUdfContainer #buttons #save {
+body.vscode-dark #editContainer #buttons #save {
     width: 50px;
     float: right;
 }
 
-body.vscode-dark #editUdfContainer #buttons #quit {
+body.vscode-dark #editContainer #buttons #quit {
     width: 50px;
     float: right;
-}
-
-body.vscode-dark #editUdfContainer input#enable {
-    border: 1px solid #6B6B6B;
-    outline-color: #007FD4;
-    outline-width: 1px;
 }

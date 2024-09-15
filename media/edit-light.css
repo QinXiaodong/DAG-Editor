@@ -1,28 +1,28 @@
-body.vscode-light #editNodeContainer {
+body.vscode-light #editContainer {
     align-items: center;
 }
 
-body.vscode-light #editNodeContainer #outerDiv {
+body.vscode-light #editContainer #outerDiv {
     margin-top: 5%;
     margin-left: 10%;
     margin-right: 10%;
     padding-bottom: 10%;
 }
 
-body.vscode-light #editNodeContainer #innerDiv {
+body.vscode-light #editContainer #innerDiv {
     display: flex;
     flex-direction: column;
 }
 
 
-body.vscode-light #editNodeContainer #input-group1 {
+body.vscode-light #editContainer #input-group1 {
     padding: 12px;
     display: flex;
     flex-direction: column;
     background-color: #F7F7F7;
 }
 
-body.vscode-light #editNodeContainer #input-group1 input {
+body.vscode-light #editContainer #input-group1 input {
     /* 修改宽度和高度 */
 
     margin-top: 10px;
@@ -43,21 +43,21 @@ body.vscode-light #editNodeContainer #input-group1 input {
     padding: 0 10px;
 }
 
-body.vscode-light #editNodeContainer #input-group2 {
+body.vscode-light #editContainer #input-group2 {
     padding: 12px;
     background-color: #F7F7F7;
 }
 
-body.vscode-light #editNodeContainer #input-group2 #propsLabel {
+body.vscode-light #editContainer #input-group2 #propsLabel {
     margin-bottom: 10px;
 }
 
-body.vscode-light #editNodeContainer #input-group2 #props {
+body.vscode-light #editContainer #input-group2 #props {
     display: flex;
     flex-direction: column;
 }
 
-body.vscode-light #editNodeContainer #input-group2 #props input {
+body.vscode-light #editContainer #input-group2 #props input {
     /* 修改宽度和高度 */
 
     margin: 5px;
@@ -77,7 +77,7 @@ body.vscode-light #editNodeContainer #input-group2 #props input {
     padding: 0 10px;
 }
 
-body.vscode-light #editNodeContainer button {
+body.vscode-light #editContainer button {
     border: none;
     border-radius: 2px;
     box-shadow: none;
@@ -90,18 +90,18 @@ body.vscode-light #editNodeContainer button {
     margin-bottom: 5px;
 }
 
-body.vscode-light #editNodeContainer button:hover {
+body.vscode-light #editContainer button:hover {
     background-color: #0258A8;
 }
 
-body.vscode-light #editNodeContainer button:focus {
+body.vscode-light #editContainer button:focus {
     background-color: #0258A8;
     outline-color: #0258A8;
     outline-style: double;
     outline-width: 3px;
 }
 
-body.vscode-light #editNodeContainer select {
+body.vscode-light #editContainer select {
     margin: 5px;
     background-color: #FFFFFF;
     width: 70px;
@@ -114,17 +114,17 @@ body.vscode-light #editNodeContainer select {
     border-radius: 2px;
 }
 
-body.vscode-light #editNodeContainer #buttons {
+body.vscode-light #editContainer #buttons {
     margin-top: 10px;
     padding: 12px;
 }
 
-body.vscode-light #editNodeContainer #buttons #save {
+body.vscode-light #editContainer #buttons #save {
     width: 50px;
     float: right;
 }
 
-body.vscode-light #editNodeContainer #buttons #quit {
+body.vscode-light #editContainer #buttons #quit {
     width: 50px;
     float: right;
 }

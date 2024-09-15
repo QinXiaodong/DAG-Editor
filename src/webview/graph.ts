@@ -3,8 +3,7 @@ import { contextmenuClickCallback, getContextmenuCallback } from "./contextmenuH
 import { globalDag } from "./Dag";
 import { currentPrefix, manageUdf, setCurrentPrefix, viewId } from "./manageUdf";
 import switchView, { currentViewId } from "./switchView";
-import { currentNodeId, editNode } from "./editNode";
-import { currentFullUdfId, editUdf } from "./editUdf";
+import { currentId, edit } from "./edit";
 
 export const graph = new Graph({
     container: 'canvasContainer',
@@ -39,8 +38,6 @@ export const graph = new Graph({
     layout: {
         type: 'dagre',
         rankdir: 'LR',
-        // nodesep: 10,
-        // ranksep: 30, // 竖直方向
     },
     node: {
         state: {
@@ -88,23 +85,10 @@ export function updateContent() {
     const udfList = document.querySelector(`#${viewId} ul`)!;
     udfList.innerHTML = '';
 
-    // 填充当前节点下的所有udf name
-    // const udfs = (currentPrefix.includes('.') ? globalDag.getUdf(currentPrefix) : globalDag.getNode(currentPrefix))?.udfs;
-    // for (const udf of udfs || []) {
-    //     addUdf(udf);
-    // }
 
-    if (currentViewId === 'editNodeContainer') {
-        if (globalDag.getNode(currentNodeId)) {
-            editNode(currentNodeId);
-        } else {
-            switchView('canvasContainer');
-        }
-    } else if (currentViewId === 'editUdfContainer') {
-        if (globalDag.getUdf(currentFullUdfId)) {
-            editUdf(currentFullUdfId);
-        } else {
-            switchView('manageUdfContainer');
+    if (currentViewId === 'editContainer') {
+        if (globalDag.getNodeOrUdf(currentId)) {
+            edit(currentId);
         }
     } else if (currentViewId === 'manageUdfContainer') {
         while (currentPrefix.includes('.') && globalDag.getUdf(currentPrefix) === undefined) {
@@ -112,8 +96,6 @@ export function updateContent() {
         }
         if (currentPrefix.includes('.') || globalDag.getNode(currentPrefix)) {
             manageUdf(currentPrefix);
-        } else {
-            switchView('canvasContainer');
         }
     }
 

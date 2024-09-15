@@ -121,11 +121,9 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
     private _getWebviewContent(webview: vscode.Webview) {
         const webviewUri = getUri(webview, this.context.extensionUri, ["out", "webview.js"]);
         const styleUri = getUri(webview, this.context.extensionUri, ["media", "dagEditor.css"]);
-        const editNodeDarkStyleUri = getUri(webview, this.context.extensionUri, ["media", "editNode-dark.css"]);
-        const editUdfDarkStyleUri = getUri(webview, this.context.extensionUri, ["media", "editUdf-dark.css"]);
+        const editDarkStyleUri = getUri(webview, this.context.extensionUri, ["media", "edit-dark.css"]);
         const manageUdfDarkStyleUri = getUri(webview, this.context.extensionUri, ["media", "manageUdf-dark.css"]);
-        const editNodeLightStyleUri = getUri(webview, this.context.extensionUri, ["media", "editNode-light.css"]);
-        const editUdfLightStyleUri = getUri(webview, this.context.extensionUri, ["media", "editUdf-light.css"]);
+        const editLightStyleUri = getUri(webview, this.context.extensionUri, ["media", "edit-light.css"]);
         const manageUdfLightStyleUri = getUri(webview, this.context.extensionUri, ["media", "manageUdf-light.css"]);
         const nonce = getNonce();
 
@@ -138,11 +136,9 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
               <link href="${styleUri}" nonce="${nonce}" rel="stylesheet" />
-              <link href="${editNodeDarkStyleUri}" nonce="${nonce}" rel="stylesheet" />
-              <link href="${editUdfDarkStyleUri}" nonce="${nonce}" rel="stylesheet" />
+              <link href="${editDarkStyleUri}" nonce="${nonce}" rel="stylesheet" />
               <link href="${manageUdfDarkStyleUri}" nonce="${nonce}" rel="stylesheet" />
-              <link href="${editNodeLightStyleUri}" nonce="${nonce}" rel="stylesheet" />
-              <link href="${editUdfLightStyleUri}" nonce="${nonce}" rel="stylesheet" />
+              <link href="${editLightStyleUri}" nonce="${nonce}" rel="stylesheet" />
               <link href="${manageUdfLightStyleUri}" nonce="${nonce}" rel="stylesheet" />
               <title>DAG Editor</title>
             </head>
@@ -156,31 +152,25 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                 </ul>
             </div>
                 <div id='canvasContainer'></div>
-                <div id='editNodeContainer' class='view' style="display: none;">
+                <div id='editContainer' class='view' style="display: none;">
                     <div id="outerDiv">
                         <div id="innerDiv">
-                            <form>  
-                                <div id="input-group1">
-                                    <div id="nameDiv">
-                                        <div><label>Name</label></div>
-                                        <div><input type="text" id="name"></div>
-                                    </div>
-                                    <div id="classNameDiv">
-                                        <div><label>ClassName</label></div>
-                                        <div><input type="text" id="className"></div>
-                                    </div>
+                            <div id="input-group1">
+                                <div id="nameDiv">
+                                    <div><label>Name</label></div>
+                                    <div><input type="text" id="name"></div>
                                 </div>
-                                <br>
-                                <div id="input-group2">
-                                    <div id=propsLabel><label>Props</label></div>
-                                    <div id="props"></div>  
-                                    <button type="button" id="add">Add</button>  
+                                <div id="classNameDiv">
+                                    <div><label>ClassName</label></div>
+                                    <div><input type="text" id="className"></div>
                                 </div>
-                                <div id="buttons">
-                                    <button type="button" id="quit">Quit</button>  
-                                    <button type="submit" id="save">Save</button>  
-                                </div>
-                            </form>
+                            </div>
+                            <br>
+                            <div id="input-group2">
+                                <div id=propsLabel><label>Props</label></div>
+                                <div id="props"></div>  
+                                <button type="button" id="add">Add</button>  
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -193,35 +183,6 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                                 <button type="button" id="add">Add</button>
                                 <button type="button" id="return">return</button>  
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div id='editUdfContainer' class='view' style="display: none;">
-                    <div id="outerDiv">
-                        <div id="innerDiv">
-                            <form>  
-                                <div id="input-group1">
-                                    <div id="nameDiv">
-                                        <div><label>Name</label></div>
-                                        <div><input type="text" id="name"></div>
-                                    </div>
-                                    <div id="classNameDiv">
-                                        <div><label>ClassName</label></div>
-                                        <div><input type="text" id="className"></div>
-                                    </div>
-                                </div>
-                                <br>
-                                <div id="input-group2">
-                                    <div id=propsLabel><label>Props</label></div>
-                                    <div id="props"></div>  
-                                    <button type="button" id="add">Add</button>  
-                                </div>
-                                <br>
-                                <div id="buttons">
-                                    <button type="button" id="quit">Quit</button>  
-                                    <button type="submit" id="save">Save</button>  
-                                </div>
-                            </form>
                         </div>
                     </div>
                 </div>

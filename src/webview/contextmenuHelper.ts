@@ -1,6 +1,6 @@
 import { globalDag } from "./Dag";
 import { graph } from "./graph";
-import { editNode } from "./editNode";
+import { edit } from "./edit";
 import { manageUdf } from "./manageUdf";
 import { AntVDagreLayoutOptions, LayoutOptions } from "@antv/g6";
 
@@ -24,7 +24,7 @@ export function contextmenuClickCallback(v: string) {
 function dealNodeItems(e: { item: string; id: string }) {
     switch (e.item) {
         case 'editNode':
-            editNode(e.id);
+            edit(e.id);
             break;
         case 'newDownstreamNode':
             globalDag.focusNode(globalDag.addNewDownstreamNode(e.id));

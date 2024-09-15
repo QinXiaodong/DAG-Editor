@@ -1,4 +1,5 @@
 import { Prop } from "./Dag";
+import { save } from "./edit";
 
 export function addProp(viewId: string, prop: Prop | undefined) {
     // 获取属性容器  
@@ -18,11 +19,15 @@ export function addProp(viewId: string, prop: Prop | undefined) {
         const button = <HTMLButtonElement>e.target;
         const parentNode = <HTMLDivElement>button.parentNode;
         parentNode.remove();
+        save();
     };
     newRow.appendChild(removeButton);
 
     // 创建属性类型选择框  
     let typeSelect = document.createElement('select');
+    typeSelect.addEventListener("input", function (event) {
+        save();
+    });
     typeSelect.required = true;
     typeSelect.className = 'propType';
 
@@ -135,3 +140,4 @@ export function extractProps(viewId: string): Prop[] | undefined {
     }
     return props.length > 0 ? props : undefined;
 }
+
