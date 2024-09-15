@@ -1,5 +1,5 @@
 import { Udf, globalDag } from "./Dag";
-import { editUdf } from "./editUdf";
+import { edit } from "./edit";
 import switchView from "./switchView";
 
 
@@ -25,7 +25,7 @@ export function registerManageUdfEvents() {
             let action = et.getAttribute('data-action');
             switch (action) {
                 case 'edit-udf':
-                    editUdf(`${currentPrefix}.${currentRightClickUdf}`);
+                    edit(`${currentPrefix}.${currentRightClickUdf}`);
                     break;
                 case 'delete-udf':
                     globalDag.deleteUdf(`${currentPrefix}.${currentRightClickUdf}`);

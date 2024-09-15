@@ -7,13 +7,18 @@ export let currentId = '';
 export let lastPropId = '';
 export let lastPropElement = '';
 let globalPropId = 0;
-let shouldFocus = '';
+let targetElement: HTMLElement | undefined = undefined;
 export function registerEditEvents() {
 
     // 为节点编辑界面绑定事件
-    document.querySelector(`#${viewId} #add`)?.addEventListener('click', function (event) {
+    let addButton = document.querySelector(`#${viewId} #add`);
+    addButton?.addEventListener('click', function (event) {
         event.preventDefault();
         addProp(undefined, `${globalPropId++}`);
+    });
+    addButton?.addEventListener('focus', function (event) {
+        lastPropElement = '';
+        lastPropId = '';
     });
 }
 
@@ -32,7 +37,9 @@ export function edit(id: string) {
     // 填充原来的节点名称
     let nameInput = <HTMLInputElement>document.querySelector(`#${viewId} #name`);
     nameInput.addEventListener("input", function (event) {
-        shouldFocus = '';
+        targetElement = undefined;
+        lastPropElement = '';
+        lastPropId = '';
         handleInputDelayed();
     });
     // 监听 input 区域的 keydown 事件
@@ -48,7 +55,9 @@ export function edit(id: string) {
     // 填充原来的className
     let classNameInput = <HTMLInputElement>document.querySelector(`#${viewId} #className`);
     classNameInput.addEventListener("input", function (event) {
-        shouldFocus = '';
+        targetElement = undefined;
+        lastPropElement = '';
+        lastPropId = '';
         handleInputDelayed();
     });
     classNameInput.value = obj.className ? obj.className : '';
@@ -75,7 +84,9 @@ export function save() {
     }
     const nameInput = <HTMLInputElement>document.querySelector(`#${viewId} #name`);
 
-    if (nameInput.value !== currentId && globalDag.getNode(nameInput.value)) {
+    if (currentId.includes('.') && nameInput.value !== currentId.substring(currentId.lastIndexOf('.') + 1) && globalDag.getUdf(`${currentId.substring(0, currentId.lastIndexOf('.'))}.${nameInput.value}`)
+        ||
+        !currentId.includes('.') && nameInput.value !== currentId && globalDag.getNode(nameInput.value)) {
         let alert = document.createElement('div');
         alert.style.marginBottom = '20px';
         alert.id = 'alert';
@@ -107,6 +118,10 @@ export function save() {
 
 
 function addProp(prop: Prop | undefined, id: string) {
+    if(prop===undefined){
+        lastPropElement='nameInput';
+        lastPropId=id;
+    }
     // 获取属性容器  
     const propsContainer = <HTMLDivElement>document.querySelector(`#${viewId} #props`)!;
 
@@ -127,7 +142,16 @@ function addProp(prop: Prop | undefined, id: string) {
         parentNode.remove();
         save();
     };
+    removeButton.addEventListener('focus', function (event) {
+        const button = <HTMLButtonElement>event.target;
+        const parentNode = <HTMLDivElement>button.parentNode;
+        lastPropElement = 'remove';
+        lastPropId = parentNode.id;
+    });
     newRow.appendChild(removeButton);
+    if (lastPropElement === 'remove' && lastPropId === id) {
+        targetElement = removeButton;
+    }
 
     // 创建属性类型选择框  
     let typeSelect = document.createElement('select');
@@ -138,6 +162,12 @@ function addProp(prop: Prop | undefined, id: string) {
         lastPropId = parentNode.id;
         lastPropElement = 'typeSelect';
         save();
+    });
+    typeSelect.addEventListener("focus", function (event) {
+        const select = <HTMLSelectElement>event.target;
+        const parentNode = <HTMLDivElement>select.parentNode;
+        lastPropId = parentNode.id;
+        lastPropElement = 'typeSelect';
     });
     typeSelect.required = true;
     typeSelect.className = 'propType';
@@ -180,9 +210,9 @@ function addProp(prop: Prop | undefined, id: string) {
                 break;
             }
         }
-        if (lastPropElement === 'typeSelect' && lastPropId === id) {
-            shouldFocus = 'typeSelect';
-        }
+    }
+    if (lastPropElement === 'typeSelect' && lastPropId === id) {
+        targetElement = typeSelect;
     }
 
     newRow.appendChild(typeSelect);
@@ -199,6 +229,12 @@ function addProp(prop: Prop | undefined, id: string) {
         lastPropElement = 'nameInput';
         handleInputDelayed();
     });
+    nameInput.addEventListener('focus', function (event) {
+        const input = <HTMLInputElement>event.target;
+        const parentNode = <HTMLDivElement>input.parentNode;
+        lastPropId = parentNode.id;
+        lastPropElement = 'nameInput';
+    });
     nameInput.type = 'text';
     nameInput.placeholder = 'Name';
     nameInput.className = 'propName';
@@ -206,9 +242,9 @@ function addProp(prop: Prop | undefined, id: string) {
 
     if (prop?.name) {
         nameInput.value = prop.name;
-        if (lastPropElement === 'nameInput' && lastPropId === id) {
-            shouldFocus = 'nameInput';
-        }
+    }
+    if (lastPropElement === 'nameInput' && lastPropId === id) {
+        targetElement = nameInput;
     }
     newRow.appendChild(nameInput);
 
@@ -224,32 +260,29 @@ function addProp(prop: Prop | undefined, id: string) {
         lastPropElement = 'valueInput';
         handleInputDelayed();
     });
+    valueInput.addEventListener('focus', function (event) {
+        const input = <HTMLInputElement>event.target;
+        const parentNode = <HTMLDivElement>input.parentNode;
+        lastPropId = parentNode.id;
+        lastPropElement = 'valueInput';
+    });
+
     valueInput.type = 'text';
     valueInput.placeholder = 'Value';
     valueInput.className = 'propValue';
     valueInput.required = true;
-    if (prop?.value) {
+    if (prop?.value || prop?.value === '') {
         valueInput.value = prop.value;
-        if (lastPropElement === 'valueInput' && lastPropId === id) {
-            shouldFocus = 'valueInput';
-        }
+    }
+    if (lastPropElement === 'valueInput' && lastPropId === id) {
+        targetElement = valueInput;
     }
     newRow.appendChild(valueInput);
 
     // 将新行添加到容器中  
     propsContainer?.appendChild(newRow);
-    switch (shouldFocus) {
-        case 'typeSelect':
-            typeSelect.focus();
-            break;
-        case 'nameInput':
-            nameInput.focus();
-            break;
-        case 'valueInput':
-            valueInput.focus();
-            break;
-        default:
-            break;
+    if (targetElement) {
+        targetElement.focus();
     }
 }
 
@@ -294,5 +327,5 @@ function handleInputDelayed() {
     }
     timeoutId = setTimeout(function () {
         save();
-    }, 200);
+    }, 500);
 }
