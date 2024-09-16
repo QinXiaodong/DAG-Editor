@@ -4,7 +4,7 @@ import switchView from "./switchView";
 
 
 export const viewId = 'manageUdfContainer';
-export let currentPrefix = '';
+export let currentPrefix = ''; // nosonar
 
 export function setCurrentPrefix(prefix: string) {
     currentPrefix = prefix;

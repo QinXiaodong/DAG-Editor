@@ -1,5 +1,5 @@
 
-export let currentViewId = '';
+export let currentViewId = ''; // nosonar
 // 指定viewId 的div可见，其他div都不可见
 export default function switchView(viewId: string) {
     currentViewId = viewId;

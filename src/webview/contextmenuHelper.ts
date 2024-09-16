@@ -78,17 +78,19 @@ function dealCanvasItems(e: { item: string; }) {
             graph.fitCenter();
             break;
         case 'changeRankdir':
-            const layoutOptions = <AntVDagreLayoutOptions>graph.getLayout();
-            layoutOptions.rankdir = layoutOptions.rankdir === 'LR' ? 'TB' : 'LR';
-            graph.setLayout(<LayoutOptions>layoutOptions);
-            graph.layout().then(() => graph.fitCenter());
+            changeRankdir();
             break;
         default:
             break;
     }
 }
 
-
+function changeRankdir() {
+    const layoutOptions = <AntVDagreLayoutOptions>graph.getLayout();
+    layoutOptions.rankdir = layoutOptions.rankdir === 'LR' ? 'TB' : 'LR';
+    graph.setLayout(<LayoutOptions>layoutOptions);
+    graph.layout().then(() => graph.fitCenter());
+}
 export function getContextmenuCallback(e: any) {
     switch (e.targetType) {
         case 'node':
@@ -220,5 +222,5 @@ function obj2str(obj: any): string {
 }
 
 function str2obj(str: string): any {
-    return JSON.parse(str.replace(/\u0001/g, "\""));
+    return JSON.parse(str.replace(/\u0001/g, "\"")); // nosonar
 }

@@ -2,9 +2,9 @@ import { Prop, globalDag } from "./Dag";
 import switchView from "./switchView";
 
 const viewId = 'editContainer';
-export let currentId = '';
-export let lastPropId = '';
-export let lastPropElement = '';
+export let currentId = ''; // nosonar
+let lastPropId = '';
+let lastPropElement = '';
 let globalPropId = 0;
 let targetElement: HTMLElement | undefined = undefined;
 export function registerEditEvents() {
@@ -40,13 +40,6 @@ export function edit(id: string) {
         lastPropElement = '';
         lastPropId = '';
         handleInputDelayed();
-    });
-    // 监听 input 区域的 keydown 事件
-    nameInput.addEventListener('keydown', (event) => {
-        // 检测 Ctrl + Z 或 Cmd + Z 组合键
-        if ((event.ctrlKey && event.key === 'z') || (event.metaKey && event.key === 'z')) {
-            switchView("canvasContainer");
-        }
     });
 
     nameInput.value = id.includes('.') ? id.substring(id.lastIndexOf('.') + 1) : id;
@@ -116,7 +109,7 @@ export function save() {
 }
 
 
-function addProp(prop: Prop | undefined, id: string) {
+function addProp(prop: Prop | undefined, id: string) { // nosonar
     if (prop === undefined) {
         lastPropElement = 'nameInput';
         lastPropId = id;

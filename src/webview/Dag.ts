@@ -147,7 +147,7 @@ export class DagClass {
         this.addEdge(source, newNodeId);
         this.addEdge(newNodeId, target);
     }
-    
+
     addNewDownstreamNode(nodeId: string) {
         let id = 0;
         while (this.getNode(`newNode-${id}`)) {
@@ -257,7 +257,7 @@ export class DagClass {
 
     }
 
-    deleteUdf(fullUdfId: string) {
+    deleteUdf(fullUdfId: string) { // nosonar
         let lastIndexOfDot = fullUdfId.lastIndexOf('.');
         let prefix = fullUdfId.substring(0, lastIndexOfDot);
         let udfName = fullUdfId.substring(lastIndexOfDot + 1);

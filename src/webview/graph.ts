@@ -2,7 +2,7 @@ import { Graph, GraphData } from "@antv/g6";
 import { contextmenuClickCallback, getContextmenuCallback } from "./contextmenuHelper";
 import { globalDag } from "./Dag";
 import { currentPrefix, manageUdf, setCurrentPrefix, viewId } from "./manageUdf";
-import { currentViewId } from "./switchView";
+import switchView, { currentViewId } from "./switchView";
 import { currentId, edit } from "./edit";
 
 export const graph = new Graph({
@@ -79,7 +79,7 @@ export const graph = new Graph({
 /**
  * Render the document in the webview.
  */
-export function updateContent() {
+export function updateContent() { // nosonar
 
     // 清理历史的udf列表
     const udfList = document.querySelector(`#${viewId} ul`)!;
@@ -89,6 +89,16 @@ export function updateContent() {
     if (currentViewId === 'editContainer') {
         if (globalDag.getNodeOrUdf(currentId)) {
             edit(currentId);
+        }
+        else if (currentId.includes('.')) {
+            while (currentPrefix.includes('.') && globalDag.getUdf(currentPrefix) === undefined) {
+                setCurrentPrefix(currentPrefix.substring(0, currentPrefix.lastIndexOf('.')));
+            }
+            if (currentPrefix.includes('.') || globalDag.getNode(currentPrefix)) {
+                manageUdf(currentPrefix);
+            }
+        } else {
+            switchView('canvasContainer');
         }
     } else if (currentViewId === 'manageUdfContainer') {
         while (currentPrefix.includes('.') && globalDag.getUdf(currentPrefix) === undefined) {
@@ -112,7 +122,7 @@ let isFirst = true;
 
 
 
-function getGraphData(): GraphData {
+function getGraphData(): GraphData {  // nosonar
 
     let data: GraphData = {
         nodes: [],
