@@ -18,6 +18,7 @@ body.vscode-light #manageUdfContainer #innerDiv {
 }
 
 body.vscode-light #manageUdfContainer #prefix {
+    overflow: hidden;
     margin: 20px;
     text-align: center;
     font-size: large;
