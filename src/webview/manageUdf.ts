@@ -51,19 +51,6 @@ export function registerManageUdfEvents() {
         globalDag.post();
     });
 
-    document.querySelector(`#${viewId} #return`)?.addEventListener('click', function (event) {
-        event.preventDefault();
-        if (currentPrefix.includes('.')) {
-            // 如果前缀是udf则返回上级udf的管理界面
-            manageUdf(currentPrefix.substring(0, currentPrefix.lastIndexOf('.')));
-
-        } else {
-            // 切换画布视图
-            switchView('canvasContainer');
-        }
-    });
-
-
     // 为udf列表拖动排序绑定事件
     let currentLi: HTMLLIElement;
     const list = <HTMLUListElement>document.querySelector(`#${viewId} ul`)!;
@@ -180,6 +167,9 @@ export function addUdf(udf: Udf) {
     item.draggable = true;
     if (globalDag.isUdfDisabled(udf)) {
         item.style.borderStyle = 'dashed';
+        item.style.borderColor = '#888888';
+        item.style.backgroundColor = 'transparent';
+        item.style.color = '#888888';
     }
 
     item.addEventListener('contextmenu', function (event) {

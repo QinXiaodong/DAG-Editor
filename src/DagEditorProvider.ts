@@ -181,7 +181,6 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
                             <div id="udfs"><ul></ul></div>   
                             <div id="buttons">
                                 <button type="button" id="add">Add</button>
-                                <button type="button" id="return">return</button>  
                             </div>
                         </div>
                     </div>

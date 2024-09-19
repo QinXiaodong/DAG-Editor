@@ -14,7 +14,6 @@ body.vscode-light #manageUdfContainer #innerDiv {
     flex-direction: column;
     border: 2px solid #616161;
     border-radius: 6px;
-    /* margin-bottom: 50px; */
 }
 
 body.vscode-light #manageUdfContainer #prefix {
