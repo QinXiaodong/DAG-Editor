@@ -5,6 +5,7 @@ const viewId = 'editContainer';
 export let currentId = ''; // nosonar
 let lastPropId = '';
 let lastPropElement = '';
+let lastCursorPos = -1;
 let globalPropId = 0;
 let targetElement: HTMLElement | undefined = undefined;
 export function registerEditEvents() {
@@ -219,6 +220,7 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
         const parentNode = <HTMLDivElement>input.parentNode;
         lastPropId = parentNode.id;
         lastPropElement = 'nameInput';
+        lastCursorPos = input.selectionStart!;
         handleInputDelayed();
     });
     nameInput.addEventListener('focus', function (event) {
@@ -250,6 +252,7 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
         const parentNode = <HTMLDivElement>input.parentNode;
         lastPropId = parentNode.id;
         lastPropElement = 'valueInput';
+        lastCursorPos = input.selectionStart!;
         handleInputDelayed();
     });
     valueInput.addEventListener('focus', function (event) {
@@ -275,6 +278,11 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
     propsContainer?.appendChild(newRow);
     if (targetElement) {
         targetElement.focus();
+        if (lastCursorPos > 0) {
+            let input = <HTMLInputElement>targetElement;
+            input.setSelectionRange(lastCursorPos, lastCursorPos);
+            lastCursorPos = -1;
+        }
     }
 }
 
