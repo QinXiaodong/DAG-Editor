@@ -283,6 +283,7 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
             input.setSelectionRange(lastCursorPos, lastCursorPos);
             lastCursorPos = -1;
         }
+        targetElement = undefined;
     }
 }
 
