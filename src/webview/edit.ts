@@ -36,22 +36,32 @@ export function edit(id: string) {
 
     // 填充原来的节点名称
     let nameInput = <HTMLInputElement>document.querySelector(`#${viewId} #name`);
+    nameInput.addEventListener("focus", function (event) {
+        targetElement = undefined;
+        lastPropElement = '';
+        lastPropId = '';
+    });
     nameInput.addEventListener("input", function (event) {
         targetElement = undefined;
         lastPropElement = '';
         lastPropId = '';
-        handleInputDelayed();
+        handleInputDelayed(undefined);
     });
 
     nameInput.value = id.includes('.') ? id.substring(id.lastIndexOf('.') + 1) : id;
 
     // 填充原来的className
     let classNameInput = <HTMLInputElement>document.querySelector(`#${viewId} #className`);
+    classNameInput.addEventListener("focus", function (event) {
+        targetElement = undefined;
+        lastPropElement = '';
+        lastPropId = '';
+    });
     classNameInput.addEventListener("input", function (event) {
         targetElement = undefined;
         lastPropElement = '';
         lastPropId = '';
-        handleInputDelayed();
+        handleInputDelayed(undefined);
     });
     classNameInput.value = obj.className ? obj.className : '';
 
@@ -62,6 +72,18 @@ export function edit(id: string) {
     for (const prop of obj.props || []) {
         addProp(prop, `${propId++}`);
     }
+
+    if (targetElement) {
+        targetElement.focus();
+        if (targetElement instanceof HTMLInputElement) {
+            let input = <HTMLInputElement>targetElement;
+            if (lastCursorPos > 0) {
+                input.setSelectionRange(lastCursorPos, lastCursorPos);
+            }
+        }
+        targetElement = undefined;
+    }
+
     globalPropId = propId;
     // edit view变可见
     switchView(viewId);
@@ -221,14 +243,18 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
         lastPropId = parentNode.id;
         lastPropElement = 'nameInput';
         lastCursorPos = input.selectionStart!;
-        handleInputDelayed();
+        handleInputDelayed(input);
     });
     nameInput.addEventListener('focus', function (event) {
         const input = <HTMLInputElement>event.target;
         const parentNode = <HTMLDivElement>input.parentNode;
-        lastPropId = parentNode.id;
-        lastPropElement = 'nameInput';
+        if (lastPropId != parentNode.id || lastPropElement != 'nameInput') {
+            lastCursorPos = -1;
+            lastPropId = parentNode.id;
+            lastPropElement = 'nameInput';
+        }
     });
+
     nameInput.type = 'text';
     nameInput.placeholder = 'Name';
     nameInput.className = 'propName';
@@ -253,13 +279,16 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
         lastPropId = parentNode.id;
         lastPropElement = 'valueInput';
         lastCursorPos = input.selectionStart!;
-        handleInputDelayed();
+        handleInputDelayed(input);
     });
     valueInput.addEventListener('focus', function (event) {
         const input = <HTMLInputElement>event.target;
         const parentNode = <HTMLDivElement>input.parentNode;
-        lastPropId = parentNode.id;
-        lastPropElement = 'valueInput';
+        if (lastPropId != parentNode.id || lastPropElement != 'valueInput') {
+            lastPropId = parentNode.id;
+            lastPropElement = 'valueInput';
+            lastCursorPos = -1;
+        }
     });
 
     valueInput.type = 'text';
@@ -276,15 +305,7 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
 
     // 将新行添加到容器中  
     propsContainer?.appendChild(newRow);
-    if (targetElement) {
-        targetElement.focus();
-        if (lastCursorPos > 0) {
-            let input = <HTMLInputElement>targetElement;
-            input.setSelectionRange(lastCursorPos, lastCursorPos);
-            lastCursorPos = -1;
-        }
-        targetElement = undefined;
-    }
+
 }
 
 function extractProps(): Prop[] | undefined {
@@ -321,12 +342,15 @@ function extractProps(): Prop[] | undefined {
     return props.length > 0 ? props : undefined;
 }
 let timeoutId: ReturnType<typeof setTimeout>; // 存储 setTimeout 的返回值
-function handleInputDelayed() {
+function handleInputDelayed(input: HTMLInputElement | undefined) {
     // 延迟 500 毫秒后处理输入事件
     if (timeoutId) {
         clearTimeout(timeoutId); // 清除之前的计时器
     }
     timeoutId = setTimeout(function () {
+        if (input) {
+            input.disabled = true;
+        }
         save();
     }, 500);
 }
