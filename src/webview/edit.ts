@@ -36,35 +36,44 @@ export function edit(id: string) {
 
     // 填充原来的节点名称
     let nameInput = <HTMLInputElement>document.querySelector(`#${viewId} #name`);
+    nameInput.disabled = false;
     nameInput.addEventListener("focus", function (event) {
-        targetElement = undefined;
-        lastPropElement = '';
-        lastPropId = '';
+        lastPropId = '-1'
+        lastPropElement = 'nameInput';
+        lastCursorPos = nameInput.selectionStart!;
     });
     nameInput.addEventListener("input", function (event) {
-        targetElement = undefined;
-        lastPropElement = '';
-        lastPropId = '';
-        handleInputDelayed(undefined);
+        lastPropId = '-1';
+        lastPropElement = 'nameInput';
+        lastCursorPos = nameInput.selectionStart!;
+        handleInputDelayed(nameInput);
     });
 
     nameInput.value = id.includes('.') ? id.substring(id.lastIndexOf('.') + 1) : id;
+    if (lastPropElement === 'nameInput' && lastPropId === '-1') {
+        targetElement = nameInput;
+    }
+
 
     // 填充原来的className
     let classNameInput = <HTMLInputElement>document.querySelector(`#${viewId} #className`);
+    classNameInput.disabled = false;
     classNameInput.addEventListener("focus", function (event) {
-        targetElement = undefined;
-        lastPropElement = '';
-        lastPropId = '';
+        lastPropId = '-1'
+        lastPropElement = 'classNameInput';
+        lastCursorPos = classNameInput.selectionStart!;
     });
     classNameInput.addEventListener("input", function (event) {
-        targetElement = undefined;
-        lastPropElement = '';
-        lastPropId = '';
-        handleInputDelayed(undefined);
+        lastPropElement = 'classNameInput';
+        lastPropId = '-1';
+        lastCursorPos = classNameInput.selectionStart!;
+        handleInputDelayed(classNameInput);
     });
     classNameInput.value = obj.className ? obj.className : '';
 
+    if (lastPropElement === 'classNameInput' && lastPropId === '-1') {
+        targetElement = classNameInput;
+    }
     const propsContainer = <HTMLDivElement>document.querySelector(`#${viewId} #props`)!;
     propsContainer.innerHTML = '';
 
@@ -134,7 +143,7 @@ export function save() {
 
 function addProp(prop: Prop | undefined, id: string) { // nosonar
     if (prop === undefined) {
-        lastPropElement = 'nameInput';
+        lastPropElement = 'propNameInput';
         lastPropId = id;
     }
     // 获取属性容器  
@@ -152,18 +161,16 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
     removeButton.textContent = 'Remove';
     removeButton.className = 'removeButton';
     removeButton.onclick = function (e) {
-        const button = <HTMLButtonElement>e.target;
-        const parentNode = <HTMLDivElement>button.parentNode;
-        parentNode.remove();
+        newRow.remove();
         save();
     };
     removeButton.addEventListener('focus', function (event) {
-        const button = <HTMLButtonElement>event.target;
-        const parentNode = <HTMLDivElement>button.parentNode;
         lastPropElement = 'remove';
-        lastPropId = parentNode.id;
+        lastPropId = newRow.id;
+        lastCursorPos = -1;
     });
     newRow.appendChild(removeButton);
+
     if (lastPropElement === 'remove' && lastPropId === id) {
         targetElement = removeButton;
     }
@@ -171,18 +178,15 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
     // 创建属性类型选择框  
     let typeSelect = document.createElement('select');
     typeSelect.addEventListener("input", function (event) {
-
-        const select = <HTMLSelectElement>event.target;
-        const parentNode = <HTMLDivElement>select.parentNode;
-        lastPropId = parentNode.id;
+        lastPropId = newRow.id;
         lastPropElement = 'typeSelect';
+        lastCursorPos = -1;
         save();
     });
     typeSelect.addEventListener("focus", function (event) {
-        const select = <HTMLSelectElement>event.target;
-        const parentNode = <HTMLDivElement>select.parentNode;
-        lastPropId = parentNode.id;
+        lastPropId = newRow.id;
         lastPropElement = 'typeSelect';
+        lastCursorPos = -1;
     });
     typeSelect.required = true;
     typeSelect.className = 'propType';
@@ -226,82 +230,74 @@ function addProp(prop: Prop | undefined, id: string) { // nosonar
             }
         }
     }
+    newRow.appendChild(typeSelect);
+
     if (lastPropElement === 'typeSelect' && lastPropId === id) {
         targetElement = typeSelect;
     }
-
-    newRow.appendChild(typeSelect);
 
     // 添加分隔符  
     newRow.appendChild(document.createTextNode(' '));
 
     // 创建属性名输入框  
-    let nameInput = document.createElement('input');
-    nameInput.addEventListener('input', function (event) {
-        const input = <HTMLInputElement>event.target;
-        const parentNode = <HTMLDivElement>input.parentNode;
-        lastPropId = parentNode.id;
-        lastPropElement = 'nameInput';
-        lastCursorPos = input.selectionStart!;
-        handleInputDelayed(input);
+    let propNameInput = document.createElement('input');
+    propNameInput.addEventListener('input', function (event) {
+        lastPropId = newRow.id;
+        lastPropElement = 'propNameInput';
+        lastCursorPos = propNameInput.selectionStart!;
+        handleInputDelayed(propNameInput);
     });
-    nameInput.addEventListener('focus', function (event) {
-        const input = <HTMLInputElement>event.target;
-        const parentNode = <HTMLDivElement>input.parentNode;
-        if (lastPropId != parentNode.id || lastPropElement != 'nameInput') {
-            lastCursorPos = -1;
-            lastPropId = parentNode.id;
-            lastPropElement = 'nameInput';
+    propNameInput.addEventListener('focus', function (event) {
+        if (lastPropId != newRow.id || lastPropElement != 'propNameInput') {
+            lastCursorPos = propNameInput.selectionStart!;
         }
+        lastPropId = newRow.id;
+        lastPropElement = 'propNameInput';
     });
 
-    nameInput.type = 'text';
-    nameInput.placeholder = 'Name';
-    nameInput.className = 'propName';
-    nameInput.required = true;
+    propNameInput.type = 'text';
+    propNameInput.placeholder = 'Name';
+    propNameInput.className = 'propName';
+    propNameInput.required = true;
 
     if (prop?.name) {
-        nameInput.value = prop.name;
+        propNameInput.value = prop.name;
     }
-    if (lastPropElement === 'nameInput' && lastPropId === id) {
-        targetElement = nameInput;
+    if (lastPropElement === 'propNameInput' && lastPropId === id) {
+        targetElement = propNameInput;
     }
-    newRow.appendChild(nameInput);
+    newRow.appendChild(propNameInput);
 
     // 添加分隔符（这里使用文本节点）  
     newRow.appendChild(document.createTextNode(' '));
 
     // 创建属性值输入框  
-    let valueInput = document.createElement('input');
-    valueInput.addEventListener('input', function (event) {
-        const input = <HTMLInputElement>event.target;
-        const parentNode = <HTMLDivElement>input.parentNode;
-        lastPropId = parentNode.id;
-        lastPropElement = 'valueInput';
-        lastCursorPos = input.selectionStart!;
-        handleInputDelayed(input);
+    let propValueInput = document.createElement('input');
+    propValueInput.addEventListener('input', function (event) {
+        lastPropId = newRow.id;
+        lastPropElement = 'propValueInput';
+        lastCursorPos = propValueInput.selectionStart!;
+        handleInputDelayed(propValueInput);
     });
-    valueInput.addEventListener('focus', function (event) {
-        const input = <HTMLInputElement>event.target;
-        const parentNode = <HTMLDivElement>input.parentNode;
-        if (lastPropId != parentNode.id || lastPropElement != 'valueInput') {
-            lastPropId = parentNode.id;
-            lastPropElement = 'valueInput';
-            lastCursorPos = -1;
+    propValueInput.addEventListener('focus', function (event) {
+        if (lastPropId != newRow.id || lastPropElement != 'propValueInput') {
+            lastCursorPos = propValueInput.selectionStart!;
         }
+        lastPropId = newRow.id;
+        lastPropElement = 'propValueInput';
     });
 
-    valueInput.type = 'text';
-    valueInput.placeholder = 'Value';
-    valueInput.className = 'propValue';
-    valueInput.required = true;
+    propValueInput.type = 'text';
+    propValueInput.placeholder = 'Value';
+    propValueInput.className = 'propValue';
+    propValueInput.required = true;
     if (prop?.value || prop?.value === '') {
-        valueInput.value = prop.value;
+        propValueInput.value = prop.value;
     }
-    if (lastPropElement === 'valueInput' && lastPropId === id) {
-        targetElement = valueInput;
+    if (lastPropElement === 'propValueInput' && lastPropId === id) {
+        targetElement = propValueInput;
     }
-    newRow.appendChild(valueInput);
+    newRow.appendChild(propValueInput);
 
     // 将新行添加到容器中  
     propsContainer?.appendChild(newRow);
