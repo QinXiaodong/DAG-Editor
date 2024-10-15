@@ -117,6 +117,7 @@ export function save() {
         alert.textContent = `${currentId.includes('.') ? 'UDF' : 'Node'} [ ${nameInput.value} ] already exists. Please rename it.`;
         document.querySelector(`#${viewId} #input-group1`)?.insertBefore(alert, document.querySelector(`#${viewId} #input-group1 #classNameDiv`));
         nameInput.focus();
+        nameInput.disabled=false;
         return;
     }
 
