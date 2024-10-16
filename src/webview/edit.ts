@@ -111,12 +111,24 @@ export function save() {
     if (currentId.includes('.') && nameInput.value !== currentId.substring(currentId.lastIndexOf('.') + 1) && globalDag.getUdf(`${currentId.substring(0, currentId.lastIndexOf('.'))}.${nameInput.value}`)
         ||
         !currentId.includes('.') && nameInput.value !== currentId && globalDag.getNode(nameInput.value)) {
+        document.querySelector(`#${viewId} #input-group1 #alert`)?.remove();
         let alert = document.createElement('div');
         alert.style.marginBottom = '20px';
         alert.id = 'alert';
         alert.textContent = `${currentId.includes('.') ? 'UDF' : 'Node'} [ ${nameInput.value} ] already exists. Please rename it.`;
         document.querySelector(`#${viewId} #input-group1`)?.insertBefore(alert, document.querySelector(`#${viewId} #input-group1 #classNameDiv`));
-        nameInput.disabled=false;
+        nameInput.disabled = false;
+        nameInput.focus();
+        return;
+    }
+    if (nameInput.value.includes('.')) {
+        document.querySelector(`#${viewId} #input-group1 #alert`)?.remove();
+        let alert = document.createElement('div');
+        alert.style.marginBottom = '20px';
+        alert.id = 'alert';
+        alert.textContent = `Name can not include dot, please rename it.`;
+        document.querySelector(`#${viewId} #input-group1`)?.insertBefore(alert, document.querySelector(`#${viewId} #input-group1 #classNameDiv`));
+        nameInput.disabled = false;
         nameInput.focus();
         return;
     }
