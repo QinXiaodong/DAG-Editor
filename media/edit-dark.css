@@ -1,130 +1,186 @@
-body.vscode-dark #editContainer {
-    align-items: center;
+#editContainer {
+  align-items: center;
 }
 
-body.vscode-dark #editContainer #outerDiv {
-    margin-top: 5%;
-    margin-left: 10%;
-    margin-right: 10%;
-    padding-bottom: 10%;
+#editContainer .outerDiv {
+  margin-top: 5%;
+  margin-left: 10%;
+  margin-right: 10%;
+  padding-bottom: 10%;
 }
 
-body.vscode-dark #editContainer #innerDiv {
-    display: flex;
-    flex-direction: column;
+#editContainer .innerDiv {
+  display: flex;
+  flex-direction: column;
 }
 
-
-body.vscode-dark #editContainer #input-group1 {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    background-color: #252728;
+#editContainer #input-group1,
+#editContainer #input-group2 {
+  padding: 12px;
+  background-color: var(--vscode-editorWidget-background, var(--vscode-sideBar-background));
 }
 
-body.vscode-dark #editContainer #input-group1 input {
-    /* 修改宽度和高度 */
-
-    margin-top: 10px;
-    margin-bottom: 15px;
-    height: 26px;
-    width: 95%;
-    border: none;
-    box-shadow: none;
-    outline-color: #007FD4;
-    outline-width: 1px;
-    border-radius: 2px;
-    background-color: #3C3C3C;
-    color: #C4C4C4;
-    /* 更改为任何你喜欢的颜色 */
-
-
-    /* 添加一些内边距以便文本看起来更舒适 */
-    padding: 0 10px;
+#editContainer #input-group1 {
+  display: flex;
+  flex-direction: column;
 }
 
-body.vscode-dark #editContainer #input-group2 {
-    padding: 12px;
-    background-color: #252728;
+#editContainer #input-group1 input,
+#editContainer #input-group2 #props input {
+  height: 26px;
+  border: 1px solid var(--vscode-input-border, transparent);
+  box-shadow: none;
+  outline-color: var(--vscode-focusBorder);
+  outline-width: 1px;
+  border-radius: 2px;
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  padding: 0 10px;
 }
 
-body.vscode-dark #editContainer #input-group2 #propsLabel {
-    margin-bottom: 10px;
+#editContainer #input-group1 input {
+  margin-top: 10px;
+  margin-bottom: 15px;
+  width: 95%;
 }
 
-body.vscode-dark #editContainer #input-group2 #props {
-    display: flex;
-    flex-direction: column;
+#editContainer #input-group2 #propsLabel {
+  margin-bottom: 10px;
 }
 
-body.vscode-dark #editContainer #input-group2 #props input {
-    /* 修改宽度和高度 */
-
-    margin: 5px;
-    height: 26px;
-    width: 30%;
-    border: none;
-    box-shadow: none;
-    outline-color: #007FD4;
-    outline-width: 1px;
-    border-radius: 2px;
-    background-color: #3C3C3C;
-    color: #C4C4C4;
-    /* 更改为任何你喜欢的颜色 */
-
-
-    /* 添加一些内边距以便文本看起来更舒适 */
-    padding: 0 10px;
+#editContainer #input-group2 #props {
+  display: flex;
+  flex-direction: column;
 }
 
-body.vscode-dark #editContainer button {
-    border: none;
-    border-radius: 2px;
-    box-shadow: none;
-    background-color: #0E639C;
-    color: #FFFFFF;
-    height: 25px;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+#editContainer #input-group2 #props input {
+  margin: 5px;
+  width: 30%;
 }
 
-body.vscode-dark #editContainer button:hover {
-    background-color: #1177BB;
+#editContainer button {
+  border: none;
+  border-radius: 2px;
+  box-shadow: none;
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  height: 25px;
+  margin: 5px 10px;
 }
 
-body.vscode-dark #editContainer button:focus {
-    background-color: #1177BB;
-    outline-color: #1177BB;
-    outline-style: double;
-    outline-width: 3px;
+#editContainer button:hover,
+#editContainer button:focus {
+  background-color: var(--vscode-button-hoverBackground);
 }
 
-body.vscode-dark #editContainer select {
-    margin: 5px;
-    background-color: #3C3C3C;
-    width: 70px;
-    color: #CCCCCC;
-    height: 26px;
-    border: none;
-    box-shadow: none;
-    outline-color: #007FD4;
-    outline-width: 1px;
-    border-radius: 2px;
+#editContainer button:focus {
+  outline-color: var(--vscode-focusBorder);
+  outline-style: double;
+  outline-width: 3px;
 }
 
-body.vscode-dark #editContainer #buttons {
-    margin-top: 10px;
-    padding: 12px;
+#editContainer .propTypePicker {
+  display: inline-block;
+  margin: 5px;
+  position: relative;
+  vertical-align: middle;
+  width: 90px;
 }
 
-body.vscode-dark #editContainer #buttons #save {
-    width: 50px;
-    float: right;
+#editContainer button.propTypeToggle {
+  align-items: center;
+  margin: 5px;
+  background-color: var(--vscode-dropdown-background, var(--vscode-input-background, var(--vscode-editor-background)));
+  border: 1px solid var(--vscode-dropdown-border, var(--vscode-input-border, transparent));
+  border-radius: 2px;
+  box-shadow: none;
+  color: var(--vscode-dropdown-foreground, var(--vscode-input-foreground, var(--vscode-foreground)));
+  display: flex;
+  height: 26px;
+  justify-content: space-between;
+  margin: 0;
+  outline-color: var(--vscode-focusBorder);
+  outline-width: 1px;
+  padding: 0 24px 0 8px;
+  position: relative;
+  text-align: left;
+  white-space: nowrap;
+  width: 100%;
 }
 
-body.vscode-dark #editContainer #buttons #quit {
-    width: 50px;
-    float: right;
+#editContainer button.propTypeToggle::after {
+  border-bottom: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  content: "";
+  height: 7px;
+  position: absolute;
+  right: 9px;
+  top: 7px;
+  transform: rotate(45deg) translateY(-2px);
+  width: 7px;
+}
+
+#editContainer button.propTypeToggle:hover,
+#editContainer button.propTypeToggle:focus {
+  background-color: var(--vscode-dropdown-background, var(--vscode-input-background, var(--vscode-editor-background)));
+}
+
+#editContainer button.propTypeToggle:focus {
+  outline-style: solid;
+  outline-width: 1px;
+}
+
+#editContainer .propTypeOptions {
+  background-color: var(
+    --vscode-menu-background,
+    var(--vscode-dropdown-background, var(--vscode-input-background, var(--vscode-editor-background)))
+  );
+  border: 1px solid
+    var(--vscode-menu-border, var(--vscode-dropdown-border, var(--vscode-input-border, transparent)));
+  box-shadow: 0 2px 8px var(--vscode-widget-shadow, rgb(0 0 0 / 35%));
+  box-sizing: border-box;
+  display: none;
+  left: 0;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  z-index: 100;
+}
+
+#editContainer .propTypePicker.open .propTypeOptions {
+  display: block;
+}
+
+#editContainer button.propTypeOption {
+  background-color: var(
+    --vscode-menu-background,
+    var(--vscode-dropdown-background, var(--vscode-input-background, var(--vscode-editor-background)))
+  );
+  border: none;
+  border-radius: 0;
+  color: var(--vscode-menu-foreground, var(--vscode-dropdown-foreground, var(--vscode-foreground)));
+  display: block;
+  height: 24px;
+  margin: 0;
+  padding: 0 8px;
+  text-align: left;
+  width: 100%;
+}
+
+#editContainer button.propTypeOption:hover,
+#editContainer button.propTypeOption:focus {
+  background-color: var(--vscode-menu-selectionBackground, var(--vscode-list-activeSelectionBackground));
+  color: var(--vscode-menu-selectionForeground, var(--vscode-list-activeSelectionForeground));
+  outline: none;
+}
+
+#editContainer #buttons {
+  margin-top: 10px;
+  padding: 12px;
+}
+
+#editContainer #buttons #save,
+#editContainer #buttons #quit {
+  width: 50px;
+  float: right;
 }

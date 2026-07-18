@@ -1,0 +1,13 @@
+{
+  "nodes": [
+    {
+      "name": "source",
+      "className": "example.Source"
+    },
+    {
+      "name": "sink",
+      "className": "example.Sink",
+      "preNodes": ["source"]
+    }
+  ]
+}

@@ -1,206 +1,290 @@
-import { Udf, globalDag } from "./Dag";
+import { Node, Udf, globalDag } from "./Dag";
+import { getElement } from "./dom";
 import { edit } from "./edit";
 import switchView from "./switchView";
 
+export const viewId = "manageUdfContainer";
+export let currentPrefix = "";
 
-export const viewId = 'manageUdfContainer';
-export let currentPrefix = ''; // nosonar
+let currentRightClickUdf: string | undefined;
+let draggedItem: HTMLLIElement | undefined;
+const selectedUdfIds = new Set<string>();
 
-export function setCurrentPrefix(prefix: string) {
-    currentPrefix = prefix;
+export function setCurrentPrefix(prefix: string): void {
+  currentPrefix = prefix;
 }
 
-let rightClickMenu = document.querySelector<HTMLDivElement>('#rightClickMenu')!;
-let currentRightClickUdf: string;
-export function registerManageUdfEvents() {
-
-    // 获取所有菜单项
-    let menuItems = document.querySelectorAll('#rightClickMenu li');
-
-    // 遍历所有菜单项
-    menuItems.forEach(function (item) {
-        item.addEventListener('click', function (event) {
-            let et = <HTMLLIElement>event.target;
-            event.stopPropagation(); // 防止事件冒泡关闭菜单
-            let action = et.getAttribute('data-action');
-            switch (action) {
-                case 'edit-udf':
-                    edit(`${currentPrefix}.${currentRightClickUdf}`);
-                    break;
-                case 'delete-udf':
-                    globalDag.deleteUdf(`${currentPrefix}.${currentRightClickUdf}`);
-                    globalDag.post();
-                    break;
-                case 'disable-udf':
-                    globalDag.changeUdfDisabledStatus(`${currentPrefix}.${currentRightClickUdf}`);
-                    globalDag.post();
-                    break;
-                case 'manage-udf':
-                    manageUdf(`${currentPrefix}.${currentRightClickUdf}`);
-                    break;
-                default:
-                    console.log(currentRightClickUdf + '未知动作');
-            }
-            closeMenu();
-        });
-    });
-    // 为udf管理界面绑定事件
-    document.querySelector(`#${viewId} #add`)?.addEventListener('click', function (event) {
-        event.preventDefault();
-        globalDag.addNewUdf(currentPrefix);
-        globalDag.post();
-    });
-
-    // 为udf列表拖动排序绑定事件
-    let currentLi: HTMLLIElement;
-    const list = <HTMLUListElement>document.querySelector(`#${viewId} ul`)!;
-    list.addEventListener('dragstart', (e: DragEvent) => {
-        e.dataTransfer!.effectAllowed = 'move';
-        currentLi = <HTMLLIElement>e.target;
-        setTimeout(() => {
-            if (currentLi) {
-                currentLi.classList.add('moving');
-            }
-        });
-    });
-
-    list.addEventListener('dragenter', (e: DragEvent) => {
-        e.preventDefault();
-        let targetLi: HTMLLIElement = <HTMLLIElement>e.target;
-        if (targetLi === currentLi || targetLi.tagName !== 'LI') {
-            return;
-        }
-
-        const liArray = Array.from(list.childNodes);
-        const currentIndex = liArray.indexOf(currentLi);
-        const targetIndex = liArray.indexOf(targetLi);
-
-        if (currentIndex < targetIndex) {
-            if (targetLi.nextElementSibling) {
-                list.insertBefore(currentLi, targetLi.nextElementSibling);
-            } else {
-                list.appendChild(currentLi);
-            }
-        } else {
-            list.insertBefore(currentLi, targetLi);
-        }
-    });
-
-    list.addEventListener('dragover', (e: DragEvent) => {
-        e.preventDefault();
-    });
-
-    list.addEventListener('dragend', (e: DragEvent) => {
-        currentLi.classList.remove('moving');
-
-        if (currentPrefix.includes('.')) {
-            const outerUdf = globalDag.getUdf(currentPrefix)!;
-            const newUdfs = [];
-            for (const li of Array.from(list.childNodes)) {
-                const udf = globalDag.getUdfFromUdf(outerUdf, li.textContent!.split(' ')[0]!);
-                if (udf) {
-                    newUdfs.push(udf);
-                }
-            }
-            outerUdf.udfs = newUdfs;
-
-        } else {
-            const node = globalDag.getNode(currentPrefix)!;
-            const newUdfs = [];
-            for (const li of Array.from(list.childNodes)) {
-                const udf = globalDag.getUdfFromNode(node, li.textContent!.split(' ')[0]);
-                if (udf) {
-                    newUdfs.push(udf);
-                }
-            }
-            node.udfs = newUdfs;
-
-        }
-        globalDag.post();
-    });
+export function clearSelectedUdfs(): void {
+  selectedUdfIds.clear();
+  updateSelectedClasses();
 }
 
-export function manageUdf(prefix: string) {
+export function registerManageUdfEvents(): void {
+  for (const item of document.querySelectorAll<HTMLLIElement>("#rightClickMenu li")) {
+    item.addEventListener("click", handleMenuClick);
+  }
 
-    currentPrefix = prefix;
+  getElement<HTMLButtonElement>("#addUdf").addEventListener("click", (event) => {
+    event.preventDefault();
+    if (globalDag.addNewUdf(currentPrefix)) {
+      commitUdfChanges();
+    }
+  });
 
-    const prefixDiv = <HTMLDivElement>document.querySelector(`#${viewId} #prefix`)!;
-    prefixDiv.textContent = currentPrefix;
+  const list = getUdfList();
+  list.addEventListener("dragstart", handleDragStart);
+  list.addEventListener("dragenter", handleDragEnter);
+  list.addEventListener("dragover", (event) => event.preventDefault());
+  list.addEventListener("dragend", handleDragEnd);
+  getElement<HTMLDivElement>(`#${viewId}`).addEventListener("click", handleBlankClick);
+}
 
-    const innerDiv = <HTMLDivElement>document.querySelector(`#${viewId} #innerDiv`);
-    if (currentPrefix.includes('.')) {
-        const udf = globalDag.getUdf(currentPrefix)!;
-        if (globalDag.isUdfDisabled(udf)) {
-            innerDiv.style.borderStyle = 'dashed';
-        } else {
-            innerDiv.style.borderStyle = 'solid';
-        }
+export function manageUdf(prefix: string): void {
+  const owner = getOwner(prefix);
+  if (!owner) {
+    switchView("canvasContainer");
+    return;
+  }
 
+  currentPrefix = prefix;
+  pruneSelectedUdfs(owner);
+  getElement<HTMLDivElement>(`#${viewId} #prefix`).textContent = currentPrefix;
+  getElement<HTMLDivElement>(`#${viewId} .innerDiv`).style.borderStyle =
+    owner.disabled === true ? "dashed" : "solid";
+
+  const udfList = getUdfList();
+  udfList.replaceChildren();
+  for (const [index, udf] of (owner.udfs ?? []).entries()) {
+    addUdf(udf, index);
+  }
+
+  switchView(viewId);
+}
+
+export function addUdf(udf: Udf, index: number): void {
+  const item = document.createElement("li");
+  const fullUdfId = getFullUdfId(udf.name);
+  item.draggable = true;
+  item.dataset.udfName = udf.name;
+  item.dataset.udfIndex = `${index}`;
+  item.dataset.udfId = fullUdfId;
+
+  item.classList.toggle("disabled", globalDag.isUdfDisabled(udf));
+  item.classList.toggle("selected", selectedUdfIds.has(fullUdfId));
+  item.addEventListener("click", (event) => handleUdfClick(item, event));
+  item.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    currentRightClickUdf = udf.name;
+    updateDisableMenuText(fullUdfId);
+    showMenu(event);
+  });
+
+  item.textContent =
+    udf.udfs && udf.udfs.length > 0 ? `${udf.name} (${udf.udfs.length})` : udf.name;
+  getUdfList().appendChild(item);
+}
+
+function handleMenuClick(event: MouseEvent): void {
+  event.stopPropagation();
+  const action = (event.currentTarget as HTMLLIElement).dataset.action;
+  if (!currentRightClickUdf) {
+    closeMenu();
+    return;
+  }
+
+  const fullUdfId = getFullUdfId(currentRightClickUdf);
+  switch (action) {
+    case "edit-udf":
+      clearSelectedUdfs();
+      edit(fullUdfId);
+      break;
+    case "delete-udf":
+      if (globalDag.deleteUdf(fullUdfId)) {
+        selectedUdfIds.delete(fullUdfId);
+        commitUdfChanges();
+      }
+      break;
+    case "disable-udf":
+      if (changeSelectedUdfDisabledStatus(fullUdfId)) {
+        selectedUdfIds.clear();
+        commitUdfChanges();
+      }
+      break;
+    case "manage-udf":
+      manageUdf(fullUdfId);
+      break;
+  }
+  closeMenu();
+}
+
+function handleDragStart(event: DragEvent): void {
+  const item = getListItem(event.target);
+  if (!item) {
+    return;
+  }
+
+  draggedItem = item;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+  }
+  setTimeout(() => draggedItem?.classList.add("moving"));
+}
+
+function handleDragEnter(event: DragEvent): void {
+  event.preventDefault();
+  const targetItem = getListItem(event.target);
+  if (!draggedItem || !targetItem || targetItem === draggedItem) {
+    return;
+  }
+
+  const list = getUdfList();
+  const items = Array.from(list.children);
+  const currentIndex = items.indexOf(draggedItem);
+  const targetIndex = items.indexOf(targetItem);
+  if (currentIndex < targetIndex) {
+    targetItem.after(draggedItem);
+  } else {
+    targetItem.before(draggedItem);
+  }
+}
+
+function handleDragEnd(): void {
+  if (!draggedItem) {
+    return;
+  }
+  draggedItem.classList.remove("moving");
+  draggedItem = undefined;
+
+  const owner = getOwner(currentPrefix);
+  if (!owner?.udfs) {
+    return;
+  }
+
+  owner.udfs = Array.from(getUdfList().children)
+    .map((item) => owner.udfs?.[Number((item as HTMLLIElement).dataset.udfIndex)])
+    .filter((udf): udf is Udf => Boolean(udf));
+  globalDag.post();
+}
+
+function handleUdfClick(item: HTMLLIElement, event: MouseEvent): void {
+  event.stopPropagation();
+  const fullUdfId = item.dataset.udfId;
+  if (!fullUdfId) {
+    return;
+  }
+
+  if (event.ctrlKey || event.metaKey) {
+    if (selectedUdfIds.has(fullUdfId)) {
+      selectedUdfIds.delete(fullUdfId);
     } else {
-        const node = globalDag.getNode(currentPrefix)!;
-        if (globalDag.isNodeDisabled(node)) {
-            innerDiv.style.borderStyle = 'dashed';
-        } else {
-            innerDiv.style.borderStyle = 'solid';
-        }
+      selectedUdfIds.add(fullUdfId);
     }
-
-    // 清理历史的udf列表
-    const udfList = document.querySelector(`#${viewId} ul`)!;
-    udfList.innerHTML = '';
-
-    // 填充当前节点下的所有udf name
-    const udfs = (currentPrefix.includes('.') ? globalDag.getUdf(currentPrefix) : globalDag.getNode(currentPrefix))?.udfs;
-    for (const udf of udfs || []) {
-        addUdf(udf);
-    }
-
-    // 显示管理UDF视图
-    switchView(viewId);
+  } else {
+    selectedUdfIds.clear();
+  }
+  updateSelectedClasses();
 }
 
-export function addUdf(udf: Udf) {
-    let udfList = <HTMLUListElement>document.querySelector(`#${viewId} ul`);
-
-    // 创建一个新的列表元素
-    let item: HTMLLIElement = document.createElement('li');
-    item.draggable = true;
-    if (globalDag.isUdfDisabled(udf)) {
-        item.style.borderStyle = 'dashed';
-        item.style.borderColor = '#888888';
-        item.style.backgroundColor = 'transparent';
-        item.style.color = '#888888';
-    }
-
-    item.addEventListener('contextmenu', function (event) {
-        event.preventDefault(); // 阻止浏览器默认行为
-        currentRightClickUdf = udf.name;
-        let disableUdfMenuItem = document.querySelector<HTMLLIElement>('#disableUdfMenuItem')!;
-        if (globalDag.isUdfDisabled(udf)) {
-            disableUdfMenuItem.textContent = '启用UDF';
-        } else {
-            disableUdfMenuItem.textContent = '禁用UDF';
-        }
-
-        rightClickMenu.style.display = 'block';
-
-        // 获取当前的滚动偏移量
-        let scrollTop = document.documentElement.scrollTop;
-        let scrollLeft = document.documentElement.scrollLeft;
-
-        rightClickMenu.style.top = (event.clientY + scrollTop) + 'px';
-        rightClickMenu.style.left = (event.clientX + scrollLeft) + 'px';
-
-        // 当点击页面其他地方时关闭菜单
-        window.addEventListener('click', closeMenu);
-
-    });
-
-
-    item.append(udf.udfs !== undefined && udf.udfs.length > 0 ? `${udf.name} (${udf.udfs.length})` : udf.name);
-    udfList.append(item);
+function handleBlankClick(event: MouseEvent): void {
+  const target = event.target instanceof Element ? event.target : undefined;
+  if (
+    getListItem(event.target) ||
+    target?.closest("button") ||
+    target?.closest("#rightClickMenu")
+  ) {
+    return;
+  }
+  selectedUdfIds.clear();
+  updateSelectedClasses();
 }
-function closeMenu() {
-    rightClickMenu.style.display = 'none';
-    window.removeEventListener('click', closeMenu);
+
+function updateDisableMenuText(anchorUdfId: string): void {
+  const selectedIds = getSelectedUdfIds(anchorUdfId);
+  const hasEnabledSelectedUdf = selectedIds.some((id) => {
+    const udf = globalDag.getUdf(id);
+    return udf && !globalDag.isUdfDisabled(udf);
+  });
+  setUdfMenuBulkMode(selectedIds.length > 1);
+  getElement<HTMLLIElement>("#disableUdfMenuItem").textContent =
+    selectedIds.length > 1
+      ? hasEnabledSelectedUdf
+        ? "禁用选中UDF"
+        : "启用选中UDF"
+      : hasEnabledSelectedUdf
+      ? "禁用UDF"
+      : "启用UDF";
+}
+
+function setUdfMenuBulkMode(isBulkMode: boolean): void {
+  for (const item of document.querySelectorAll<HTMLLIElement>("#rightClickMenu li")) {
+    item.style.display = isBulkMode && item.dataset.action !== "disable-udf" ? "none" : "";
+  }
+}
+
+function changeSelectedUdfDisabledStatus(anchorUdfId: string): boolean {
+  const selectedIds = getSelectedUdfIds(anchorUdfId);
+  const shouldDisable = selectedIds.some((id) => {
+    const udf = globalDag.getUdf(id);
+    return udf && !globalDag.isUdfDisabled(udf);
+  });
+  return globalDag.setUdfsDisabledStatus(selectedIds, shouldDisable);
+}
+
+function getSelectedUdfIds(anchorUdfId: string): string[] {
+  return selectedUdfIds.has(anchorUdfId) ? Array.from(selectedUdfIds) : [anchorUdfId];
+}
+
+function updateSelectedClasses(): void {
+  for (const item of getUdfList().children) {
+    const listItem = item as HTMLLIElement;
+    listItem.classList.toggle("selected", selectedUdfIds.has(listItem.dataset.udfId ?? ""));
+  }
+}
+
+function pruneSelectedUdfs(owner: Node | Udf): void {
+  const visibleUdfIds = new Set((owner.udfs ?? []).map((udf) => getFullUdfId(udf.name)));
+  for (const selectedUdfId of selectedUdfIds) {
+    if (!visibleUdfIds.has(selectedUdfId)) {
+      selectedUdfIds.delete(selectedUdfId);
+    }
+  }
+}
+
+function getOwner(prefix: string): Node | Udf | undefined {
+  return prefix.includes(".") ? globalDag.getUdf(prefix) : globalDag.getNode(prefix);
+}
+
+function commitUdfChanges(): void {
+  globalDag.post();
+  manageUdf(currentPrefix);
+}
+
+function getListItem(target: EventTarget | null): HTMLLIElement | undefined {
+  if (!(target instanceof Element)) {
+    return undefined;
+  }
+  const item = target.closest<HTMLLIElement>("li");
+  return item && getUdfList().contains(item) ? item : undefined;
+}
+
+function getUdfList(): HTMLUListElement {
+  return getElement<HTMLUListElement>(`#${viewId} ul`);
+}
+
+function getFullUdfId(udfName: string): string {
+  return `${currentPrefix}.${udfName}`;
+}
+
+function showMenu(event: MouseEvent): void {
+  const menu = getElement<HTMLDivElement>("#rightClickMenu");
+  menu.style.display = "block";
+  menu.style.top = `${event.clientY + document.documentElement.scrollTop}px`;
+  menu.style.left = `${event.clientX + document.documentElement.scrollLeft}px`;
+  window.addEventListener("click", closeMenu, { once: true });
+}
+
+function closeMenu(): void {
+  getElement<HTMLDivElement>("#rightClickMenu").style.display = "none";
+  currentRightClickUdf = undefined;
+  window.removeEventListener("click", closeMenu);
 }

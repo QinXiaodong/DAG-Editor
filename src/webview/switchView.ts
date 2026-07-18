@@ -1,18 +1,26 @@
+export type ViewId = "canvasContainer" | "editContainer" | "manageUdfContainer";
 
-export let currentViewId = ''; // nosonar
-// 指定viewId 的div可见，其他div都不可见
-export default function switchView(viewId: string) {
-    currentViewId = viewId;
-    for (const view of document.querySelectorAll('body>div.view')) {
-        (<HTMLDivElement>view).style.display = 'none';
-    }
-    const canvasContainer = document.querySelector<HTMLDivElement>("body>div#canvasContainer")!;
-    canvasContainer.style.visibility = 'hidden';
+export let currentViewId: ViewId = "canvasContainer";
 
-    const targetView = <HTMLDivElement>document.getElementById(viewId);
-    if (viewId === 'canvasContainer') {
-        targetView.style.visibility = 'visible';
-    } else {
-        targetView.style.display = 'block';
-    }
+export default function switchView(viewId: ViewId): void {
+  currentViewId = viewId;
+
+  for (const view of document.querySelectorAll<HTMLDivElement>("body > div.view")) {
+    view.style.display = "none";
+  }
+
+  const canvasContainer = getView("canvasContainer");
+  canvasContainer.style.visibility = viewId === "canvasContainer" ? "visible" : "hidden";
+
+  if (viewId !== "canvasContainer") {
+    getView(viewId).style.display = "block";
+  }
+}
+
+function getView(viewId: ViewId): HTMLDivElement {
+  const view = document.getElementById(viewId);
+  if (!(view instanceof HTMLDivElement)) {
+    throw new Error(`Missing required view: ${viewId}`);
+  }
+  return view;
 }

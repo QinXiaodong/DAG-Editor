@@ -1,5 +1,17 @@
 out
 dist
 node_modules
+.test-out
+.npm-cache
 .vscode-test/
 *.vsix
+*.log
+*.tsbuildinfo
+coverage/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+/image.png
+/Snipaste_*.png

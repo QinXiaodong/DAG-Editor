@@ -1,0 +1,16 @@
+{
+  "nodes": [
+    {
+      "name": "a",
+      "preNodes": ["c", "missing"]
+    },
+    {
+      "name": "b",
+      "preNodes": ["a"]
+    },
+    {
+      "name": "c",
+      "preNodes": ["b"]
+    }
+  ]
+}

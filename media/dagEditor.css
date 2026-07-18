@@ -1,67 +1,70 @@
-/* CSS样式 */
 #canvasContainer {
-    width: 100%;
-    height: 100vh;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  touch-action: none;
 }
 
-body>div.view {
-    width: 100%;
-    height: 100vh;
-    position: absolute;
-    left: 0px;
-    top: 0px;
+body {
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
 }
 
+body.vscode-dark,
+body.vscode-high-contrast {
+  color-scheme: dark;
+}
+
+body.vscode-light,
+body.vscode-high-contrast-light {
+  color-scheme: light;
+}
+
+body > div.view {
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
 
 #canvasContainer canvas {
-    cursor: auto;
+  cursor: auto;
+  touch-action: none;
 }
 
-body.vscode-dark .g6-contextmenu {
-    background-color: rgba(0, 0, 0, 0)
+body .g6-contextmenu,
+#rightClickMenu {
+  background-color: var(
+    --vscode-menu-background,
+    var(--vscode-editorWidget-background, var(--vscode-editor-background))
+  ) !important;
+  border: 1px solid
+    var(--vscode-menu-border, var(--vscode-editorWidget-border, var(--vscode-focusBorder)));
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  z-index: 1000;
 }
 
-body.vscode-dark .g6-contextmenu ul {
-    padding: 4px;
-    border-radius: 6px;
-    border: 1px solid #454545;
-    background-color: #252526;
-
+body .g6-contextmenu .g6-contextmenu-ul,
+#rightClickMenu ul {
+  margin: 0;
+  padding: 4px;
+  border: none;
+  background-color: transparent !important;
+  list-style-type: none;
 }
 
-body.vscode-dark .g6-contextmenu ul li {
-
-    color: #CCCCCC;
-    border-radius: 5px;
-    padding: 5px 25px;
+body .g6-contextmenu .g6-contextmenu-li,
+#rightClickMenu ul li {
+  color: var(--vscode-menu-foreground, var(--vscode-foreground));
+  border-radius: 5px;
+  padding: 5px 25px;
+  cursor: pointer;
 }
 
-body.vscode-dark .g6-contextmenu ul li:hover {
-    color: #FFFFFF;
-    background: #04395E;
+body .g6-contextmenu .g6-contextmenu-li:hover,
+#rightClickMenu ul li:hover {
+  color: var(--vscode-menu-selectionForeground, var(--vscode-list-activeSelectionForeground));
+  background: var(--vscode-menu-selectionBackground, var(--vscode-list-activeSelectionBackground));
 }
-
-body.vscode-light .g6-contextmenu {
-    background-color: rgba(0, 0, 0, 0)
-}
-
-body.vscode-light .g6-contextmenu ul {
-    padding: 4px;
-    border-radius: 6px;
-    border: 1px solid #D4D4D4;
-    background-color: #FFFFFF;
-
-}
-
-body.vscode-light .g6-contextmenu ul li {
-    color: #6A6A6A;
-    border-radius: 5px;
-    padding: 5px 25px;
-}
-
-body.vscode-light .g6-contextmenu ul li:hover {
-    color: #FFFFFF;
-    background: #0060C0;
-}
-
-

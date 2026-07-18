@@ -1,7 +1,10 @@
 .vscode/**
+.github/**
 .vscode-test/**
 # out/**
 node_modules/**
+.test-out/**
+test-fixtures/**
 src/**
 esbuild.js
 .gitignore

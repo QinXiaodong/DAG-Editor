@@ -1,13 +1,17 @@
-const { build } = require("esbuild");
+// @ts-check
 
-//@ts-check
+const { build, context } = require("esbuild");
+
+const args = process.argv.slice(2);
+const isProduction = args.includes("--production");
+
 /** @typedef {import('esbuild').BuildOptions} BuildOptions **/
 
 /** @type BuildOptions */
 const baseConfig = {
   bundle: true,
-  minify: process.env.NODE_ENV === "production",
-  sourcemap: process.env.NODE_ENV !== "production",
+  minify: isProduction,
+  sourcemap: !isProduction,
 };
 
 // Config for extension source code (to be run in a Node-based context)
@@ -32,50 +36,85 @@ const webviewConfig = {
   outfile: "./out/webview.js",
 };
 
-// This watch config adheres to the conventions of the esbuild-problem-matchers
-// extension (https://github.com/connor4312/esbuild-problem-matchers#esbuild-via-js)
 /** @type BuildOptions */
-const watchConfig = {
-  watch: {
-    onRebuild(error, result) {
+const testConfig = {
+  ...baseConfig,
+  platform: "node",
+  format: "cjs",
+  entryPoints: ["./src/model/DagModel.test.ts"],
+  outfile: "./.test-out/DagModel.test.js",
+};
+
+/** @type BuildOptions */
+const integrationTestRunnerConfig = {
+  ...baseConfig,
+  platform: "node",
+  format: "cjs",
+  entryPoints: ["./src/test/runTest.ts"],
+  outfile: "./.test-out/integration/runTest.js",
+  external: ["@vscode/test-electron"],
+};
+
+/** @type BuildOptions */
+const integrationTestSuiteConfig = {
+  ...baseConfig,
+  platform: "node",
+  format: "cjs",
+  entryPoints: ["./src/test/suite/index.ts"],
+  outfile: "./.test-out/integration/suite/index.js",
+  external: ["vscode"],
+};
+
+/** @type {import("esbuild").Plugin} */
+const watchReporter = {
+  name: "watch-reporter",
+  setup(build) {
+    build.onStart(() => {
       console.log("[watch] build started");
-      if (error) {
-        error.errors.forEach((error) =>
-          console.error(
-            `> ${error.location.file}:${error.location.line}:${error.location.column}: error: ${error.text}`
-          )
-        );
-      } else {
+    });
+    build.onEnd((result) => {
+      for (const error of result.errors) {
+        const location = error.location;
+        const prefix = location ? `${location.file}:${location.line}:${location.column}: ` : "";
+        console.error(`> ${prefix}error: ${error.text}`);
+      }
+      if (result.errors.length === 0) {
         console.log("[watch] build finished");
       }
-    },
+    });
   },
 };
 
+/** @param {BuildOptions} config */
+async function watch(config) {
+  const buildContext = await context({
+    ...config,
+    plugins: [...(config.plugins ?? []), watchReporter],
+  });
+  await buildContext.watch();
+  return buildContext;
+}
+
 // Build script
 (async () => {
-  const args = process.argv.slice(2);
   try {
-    if (args.includes("--watch")) {
-      // Build and watch extension and webview code
-      console.log("[watch] build started");
-      await build({
-        ...extensionConfig,
-        ...watchConfig,
-      });
-      await build({
-        ...webviewConfig,
-        ...watchConfig,
-      });
-      console.log("[watch] build finished");
+    if (args.includes("--test")) {
+      await build(testConfig);
+      console.log("test build complete");
+    } else if (args.includes("--integration-test")) {
+      await build(integrationTestRunnerConfig);
+      await build(integrationTestSuiteConfig);
+      console.log("integration test build complete");
+    } else if (args.includes("--watch")) {
+      await Promise.all([watch(extensionConfig), watch(webviewConfig)]);
     } else {
       // Build extension and webview code
       await build(extensionConfig);
       await build(webviewConfig);
       console.log("build complete");
     }
-  } catch (err) {
-    process.stderr.write(err.stderr);
-    process.exit(1);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
   }
 })();
