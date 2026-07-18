@@ -59,20 +59,20 @@ export const graph = new Graph({
   node: {
     state: {
       active: {
-        stroke: getThemeColor("--vscode-focusBorder", getActiveColor()),
+        stroke: getGraphForegroundColor(getActiveColor()),
         halo: false,
         lineWidth: 2,
-        fill: getThemeColor("--vscode-list-activeSelectionBackground", getNodeFillColor()),
+        fill: getNodeHighlightBackgroundColor(),
         labelFill: getThemeColor("--vscode-list-activeSelectionForeground", getBaseColor()),
         labelFontSize: 16,
         labelFontStyle: "italic",
         labelFontWeight: "normal",
       },
       selected: {
-        stroke: getThemeColor("--vscode-focusBorder", getActiveColor()),
+        stroke: getGraphForegroundColor(getActiveColor()),
         halo: false,
         lineWidth: 2,
-        fill: getThemeColor("--vscode-list-activeSelectionBackground", getNodeFillColor()),
+        fill: getNodeHighlightBackgroundColor(),
         labelFill: getThemeColor("--vscode-list-activeSelectionForeground", getBaseColor()),
         labelFontSize: 16,
         labelFontStyle: "italic",
@@ -304,6 +304,13 @@ function getNodeBackgroundColor(): string {
     getThemeColor("--vscode-sideBar-background", "") ||
     getThemeColor("--vscode-editorWidget-background", "") ||
     getThemeColor("--vscode-input-background", getNodeFillColor())
+  );
+}
+
+function getNodeHighlightBackgroundColor(): string {
+  return (
+    getThemeColor("--vscode-menu-selectionBackground", "") ||
+    getThemeColor("--vscode-list-activeSelectionBackground", getNodeFillColor())
   );
 }
 

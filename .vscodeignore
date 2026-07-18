@@ -2,9 +2,11 @@
 .github/**
 .vscode-test/**
 # out/**
+.npm-cache/**
 node_modules/**
 .test-out/**
 test-fixtures/**
+coverage/**
 src/**
 esbuild.js
 .gitignore
@@ -14,3 +16,7 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+*.log
+*.vsix
+.DS_Store
+Thumbs.db

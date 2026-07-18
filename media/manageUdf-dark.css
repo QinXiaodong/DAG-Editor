@@ -88,6 +88,7 @@ body.vscode-high-contrast-light #manageUdfContainer {
   border: 1px solid var(--dag-graph-foreground);
   background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
   list-style-type: none;
+  position: relative;
 }
 
 #manageUdfContainer li.disabled {
@@ -99,13 +100,47 @@ body.vscode-high-contrast-light #manageUdfContainer {
 
 #manageUdfContainer li:hover,
 #manageUdfContainer li.selected {
-  background: var(--vscode-list-activeSelectionBackground, var(--vscode-editorWidget-background));
-  border-color: var(--vscode-focusBorder, var(--dag-graph-foreground));
-  color: var(--vscode-list-activeSelectionForeground, var(--dag-graph-foreground));
+  background: var(--vscode-menu-selectionBackground, var(--vscode-list-activeSelectionBackground));
+  border-color: var(--dag-graph-foreground);
+  color: var(--vscode-menu-selectionForeground, var(--vscode-list-activeSelectionForeground));
+}
+
+#manageUdfContainer ul.dragging li:hover,
+#manageUdfContainer ul.dragging li.selected {
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+  border-color: var(--dag-graph-foreground);
+  color: var(--dag-graph-foreground);
+}
+
+#manageUdfContainer ul.dragging li.disabled:hover,
+#manageUdfContainer ul.dragging li.disabled.selected {
+  background-color: transparent;
+  border-color: var(--dag-disabled-foreground);
+  color: var(--dag-disabled-foreground);
 }
 
 #manageUdfContainer .moving {
-  background: transparent;
-  color: transparent;
-  border: 1px dashed var(--dag-disabled-foreground);
+  box-shadow: 0 0 0 1px var(--vscode-focusBorder, var(--dag-graph-foreground));
+  opacity: 0.8;
+  transform: scale(0.99);
+}
+
+#manageUdfContainer li.drop-before::before,
+#manageUdfContainer li.drop-after::after {
+  background: var(--vscode-focusBorder, var(--dag-graph-foreground));
+  border-radius: 999px;
+  box-shadow: 0 0 8px var(--vscode-focusBorder, var(--dag-graph-foreground));
+  content: "";
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+#manageUdfContainer li.drop-before::before {
+  top: -5px;
+}
+
+#manageUdfContainer li.drop-after::after {
+  bottom: -5px;
 }

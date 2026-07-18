@@ -124,6 +124,7 @@ function handleDragStart(event: DragEvent): void {
   }
 
   draggedItem = item;
+  getUdfList().classList.add("dragging");
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = "move";
   }
@@ -143,8 +144,10 @@ function handleDragEnter(event: DragEvent): void {
   const targetIndex = items.indexOf(targetItem);
   if (currentIndex < targetIndex) {
     targetItem.after(draggedItem);
+    markDropIndicator(targetItem, "after");
   } else {
     targetItem.before(draggedItem);
+    markDropIndicator(targetItem, "before");
   }
 }
 
@@ -154,6 +157,8 @@ function handleDragEnd(): void {
   }
   draggedItem.classList.remove("moving");
   draggedItem = undefined;
+  getUdfList().classList.remove("dragging");
+  clearDropIndicators();
 
   const owner = getOwner(currentPrefix);
   if (!owner?.udfs) {
@@ -164,6 +169,17 @@ function handleDragEnd(): void {
     .map((item) => owner.udfs?.[Number((item as HTMLLIElement).dataset.udfIndex)])
     .filter((udf): udf is Udf => Boolean(udf));
   globalDag.post();
+}
+
+function markDropIndicator(item: HTMLLIElement, position: "before" | "after"): void {
+  clearDropIndicators();
+  item.classList.add(position === "before" ? "drop-before" : "drop-after");
+}
+
+function clearDropIndicators(): void {
+  for (const item of getUdfList().querySelectorAll(".drop-before, .drop-after")) {
+    item.classList.remove("drop-before", "drop-after");
+  }
 }
 
 function handleUdfClick(item: HTMLLIElement, event: MouseEvent): void {
