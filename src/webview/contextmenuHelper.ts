@@ -15,7 +15,12 @@ type NodeAction = {
     | "newDownstreamNode"
     | "newUpstreamNode"
     | "manageUdf"
+    | "copyNode"
+    | "copySelectedNodes"
+    | "cutNode"
+    | "cutSelectedNodes"
     | "deleteNode"
+    | "deleteSelectedNodes"
     | "changeNodeDisabledStatus"
     | "disableSelectedNodes"
     | "enableSelectedNodes";
@@ -31,7 +36,7 @@ type EdgeAction = {
 
 type CanvasAction = {
   type: "canvas";
-  item: "newNode" | "fitView" | "fitCenter" | "changeRankdir";
+  item: "newNode" | "pasteNodes" | "fitView" | "fitCenter" | "changeRankdir";
 };
 
 type MenuAction = NodeAction | EdgeAction | CanvasAction;
@@ -109,9 +114,27 @@ function handleNodeAction(action: NodeAction): void {
     case "manageUdf":
       manageUdf(action.id);
       break;
+    case "copyNode":
+      globalDag.copyNodesToClipboard([action.id]);
+      break;
+    case "copySelectedNodes":
+      globalDag.copyNodesToClipboard(getSelectedNodeIds(action.id));
+      break;
+    case "cutNode":
+      globalDag.cutNodesToClipboard([action.id]);
+      break;
+    case "cutSelectedNodes":
+      globalDag.cutNodesToClipboard(getSelectedNodeIds(action.id));
+      break;
     case "deleteNode":
       globalDag.deleteNode(action.id);
       commitChanges();
+      break;
+    case "deleteSelectedNodes":
+      if (deleteSelectedNodes(action.id)) {
+        clearSelectedNodeStates();
+        commitChanges();
+      }
       break;
     case "changeNodeDisabledStatus":
       globalDag.changeNodeDisabledStatus(action.id);
@@ -146,6 +169,9 @@ function handleCanvasAction(action: CanvasAction): void {
   switch (action.item) {
     case "newNode":
       commitChanges(globalDag.addNewNode());
+      break;
+    case "pasteNodes":
+      globalDag.requestPasteNodesFromClipboard();
       break;
     case "fitView":
       void getGraph().fitView();
@@ -197,6 +223,14 @@ function clearSelectedNodeStates(): void {
   void graphInstance.setElementState(states, false);
 }
 
+function deleteSelectedNodes(anchorNodeId: string): boolean {
+  let changed = false;
+  for (const nodeId of getSelectedNodeIds(anchorNodeId)) {
+    changed = globalDag.deleteNode(nodeId) || changed;
+  }
+  return changed;
+}
+
 function getNodeMenuItems(id: string): MenuItem[] {
   const selectedNodeIds = getSelectedNodeIds(id);
   const hasEnabledSelectedNode = selectedNodeIds.some((nodeId) => !globalDag.isDisabled(nodeId));
@@ -214,11 +248,18 @@ function getNodeMenuItems(id: string): MenuItem[] {
         });
 
   if (selectedNodeIds.length > 1) {
-    return [disabledMenuItem];
+    return [
+      createMenuItem("复制选中节点", { type: "node", item: "copySelectedNodes", id }),
+      createMenuItem("剪切选中节点", { type: "node", item: "cutSelectedNodes", id }),
+      createMenuItem("删除选中节点", { type: "node", item: "deleteSelectedNodes", id }),
+      disabledMenuItem,
+    ];
   }
 
   return [
     createMenuItem("编辑节点", { type: "node", item: "editNode", id }),
+    createMenuItem("复制节点", { type: "node", item: "copyNode", id }),
+    createMenuItem("剪切节点", { type: "node", item: "cutNode", id }),
     createMenuItem("新建下游节点", { type: "node", item: "newDownstreamNode", id }),
     createMenuItem("新建上游节点", { type: "node", item: "newUpstreamNode", id }),
     createMenuItem("删除节点", { type: "node", item: "deleteNode", id }),
@@ -237,6 +278,7 @@ function getEdgeMenuItems(source: string, target: string): MenuItem[] {
 function getCanvasMenuItems(): MenuItem[] {
   return [
     createMenuItem("新建节点", { type: "canvas", item: "newNode" }),
+    createMenuItem("粘贴节点", { type: "canvas", item: "pasteNodes" }),
     createMenuItem("画面自适应", { type: "canvas", item: "fitView" }),
     createMenuItem("画面居中", { type: "canvas", item: "fitCenter" }),
     createMenuItem("调整布局方向", { type: "canvas", item: "changeRankdir" }),

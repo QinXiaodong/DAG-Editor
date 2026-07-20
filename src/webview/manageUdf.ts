@@ -1,4 +1,5 @@
-import { Node, Udf, globalDag } from "./Dag";
+import type { Node, Udf } from "./Dag";
+import { globalDag } from "./Dag";
 import { getElement } from "./dom";
 import { edit } from "./edit";
 import switchView from "./switchView";
@@ -36,7 +37,10 @@ export function registerManageUdfEvents(): void {
   list.addEventListener("dragenter", handleDragEnter);
   list.addEventListener("dragover", (event) => event.preventDefault());
   list.addEventListener("dragend", handleDragEnd);
-  getElement<HTMLDivElement>(`#${viewId}`).addEventListener("click", handleBlankClick);
+
+  const container = getElement<HTMLDivElement>(`#${viewId}`);
+  container.addEventListener("click", handleBlankClick);
+  container.addEventListener("contextmenu", handleBlankContextMenu);
 }
 
 export function manageUdf(prefix: string): void {
@@ -74,8 +78,9 @@ export function addUdf(udf: Udf, index: number): void {
   item.addEventListener("click", (event) => handleUdfClick(item, event));
   item.addEventListener("contextmenu", (event) => {
     event.preventDefault();
+    event.stopPropagation();
     currentRightClickUdf = udf.name;
-    updateDisableMenuText(fullUdfId);
+    updateUdfMenu(fullUdfId);
     showMenu(event);
   });
 
@@ -84,9 +89,48 @@ export function addUdf(udf: Udf, index: number): void {
   getUdfList().appendChild(item);
 }
 
+export function copySelectedUdfs(): void {
+  copyUdfs(getCurrentSelectedUdfIds());
+}
+
+export function cutSelectedUdfs(): void {
+  cutUdfs(getCurrentSelectedUdfIds());
+}
+
+export function deleteUdfs(udfIds: string[]): void {
+  let changed = false;
+  for (const udfId of udfIds) {
+    changed = globalDag.deleteUdf(udfId) || changed;
+  }
+  if (!changed) {
+    return;
+  }
+
+  selectedUdfIds.clear();
+  commitUdfChanges();
+}
+
+export function pasteClipboardUdfs(udfs: Udf[]): void {
+  const pastedUdfIds = globalDag.pasteUdfsFromClipboard(currentPrefix, udfs);
+  if (pastedUdfIds.length === 0) {
+    return;
+  }
+
+  selectedUdfIds.clear();
+  for (const udfId of pastedUdfIds) {
+    selectedUdfIds.add(udfId);
+  }
+  commitUdfChanges();
+}
+
 function handleMenuClick(event: MouseEvent): void {
   event.stopPropagation();
   const action = (event.currentTarget as HTMLLIElement).dataset.action;
+  if (action === "paste-udf") {
+    globalDag.requestPasteUdfsFromClipboard();
+    closeMenu();
+    return;
+  }
   if (!currentRightClickUdf) {
     closeMenu();
     return;
@@ -98,9 +142,15 @@ function handleMenuClick(event: MouseEvent): void {
       clearSelectedUdfs();
       edit(fullUdfId);
       break;
+    case "copy-udf":
+      copyUdfs(getSelectedUdfIds(fullUdfId));
+      break;
+    case "cut-udf":
+      cutUdfs(getSelectedUdfIds(fullUdfId));
+      break;
     case "delete-udf":
-      if (globalDag.deleteUdf(fullUdfId)) {
-        selectedUdfIds.delete(fullUdfId);
+      if (deleteSelectedUdfs(fullUdfId)) {
+        selectedUdfIds.clear();
         commitUdfChanges();
       }
       break;
@@ -214,27 +264,75 @@ function handleBlankClick(event: MouseEvent): void {
   updateSelectedClasses();
 }
 
-function updateDisableMenuText(anchorUdfId: string): void {
+function handleBlankContextMenu(event: MouseEvent): void {
+  const target = event.target instanceof Element ? event.target : undefined;
+  if (
+    getListItem(event.target) ||
+    target?.closest("button") ||
+    target?.closest("#rightClickMenu")
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  currentRightClickUdf = undefined;
+  setUdfMenuMode("blank");
+  showMenu(event);
+}
+
+function updateUdfMenu(anchorUdfId: string): void {
   const selectedIds = getSelectedUdfIds(anchorUdfId);
   const hasEnabledSelectedUdf = selectedIds.some((id) => {
     const udf = globalDag.getUdf(id);
     return udf && !globalDag.isUdfDisabled(udf);
   });
-  setUdfMenuBulkMode(selectedIds.length > 1);
-  getElement<HTMLLIElement>("#disableUdfMenuItem").textContent =
-    selectedIds.length > 1
-      ? hasEnabledSelectedUdf
-        ? "禁用选中UDF"
-        : "启用选中UDF"
-      : hasEnabledSelectedUdf
-      ? "禁用UDF"
-      : "启用UDF";
+  const isBulkMode = selectedIds.length > 1;
+  setUdfMenuMode(isBulkMode ? "bulk" : "item");
+  setUdfMenuText("copy-udf", isBulkMode ? "复制选中UDF" : "复制UDF");
+  setUdfMenuText("cut-udf", isBulkMode ? "剪切选中UDF" : "剪切UDF");
+  setUdfMenuText("delete-udf", isBulkMode ? "删除选中UDF" : "删除UDF");
+  getElement<HTMLLIElement>("#disableUdfMenuItem").textContent = isBulkMode
+    ? hasEnabledSelectedUdf
+      ? "禁用选中UDF"
+      : "启用选中UDF"
+    : hasEnabledSelectedUdf
+    ? "禁用UDF"
+    : "启用UDF";
 }
 
-function setUdfMenuBulkMode(isBulkMode: boolean): void {
+function setUdfMenuMode(mode: "item" | "bulk" | "blank"): void {
   for (const item of document.querySelectorAll<HTMLLIElement>("#rightClickMenu li")) {
-    item.style.display = isBulkMode && item.dataset.action !== "disable-udf" ? "none" : "";
+    const action = item.dataset.action;
+    const isBulkAction =
+      action === "copy-udf" ||
+      action === "cut-udf" ||
+      action === "delete-udf" ||
+      action === "disable-udf";
+    item.style.display =
+      (mode === "blank" && action !== "paste-udf") || (mode === "bulk" && !isBulkAction)
+        ? "none"
+        : "";
   }
+}
+
+function setUdfMenuText(action: string, text: string): void {
+  getElement<HTMLLIElement>(`#rightClickMenu li[data-action="${action}"]`).textContent = text;
+}
+
+function copyUdfs(udfIds: string[]): void {
+  globalDag.copyUdfsToClipboard(udfIds);
+}
+
+function cutUdfs(udfIds: string[]): void {
+  globalDag.cutUdfsToClipboard(udfIds);
+}
+
+function deleteSelectedUdfs(anchorUdfId: string): boolean {
+  let changed = false;
+  for (const udfId of getSelectedUdfIds(anchorUdfId)) {
+    changed = globalDag.deleteUdf(udfId) || changed;
+  }
+  return changed;
 }
 
 function changeSelectedUdfDisabledStatus(anchorUdfId: string): boolean {
@@ -247,7 +345,14 @@ function changeSelectedUdfDisabledStatus(anchorUdfId: string): boolean {
 }
 
 function getSelectedUdfIds(anchorUdfId: string): string[] {
-  return selectedUdfIds.has(anchorUdfId) ? Array.from(selectedUdfIds) : [anchorUdfId];
+  const currentSelectedIds = getCurrentSelectedUdfIds();
+  return currentSelectedIds.includes(anchorUdfId) ? currentSelectedIds : [anchorUdfId];
+}
+
+function getCurrentSelectedUdfIds(): string[] {
+  return Array.from(getUdfList().children)
+    .map((item) => (item as HTMLLIElement).dataset.udfId)
+    .filter((id): id is string => typeof id === "string" && selectedUdfIds.has(id));
 }
 
 function updateSelectedClasses(): void {

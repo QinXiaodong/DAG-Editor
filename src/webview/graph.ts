@@ -5,6 +5,7 @@ import {
   contextmenuClickCallback,
   getContextmenuCallback,
 } from "./contextmenuHelper";
+import type { Node } from "../model/DagModel";
 import { globalDag } from "./Dag";
 import { currentPrefix, manageUdf, setCurrentPrefix } from "./manageUdf";
 import switchView, { currentViewId } from "./switchView";
@@ -214,6 +215,42 @@ export function getSelectedNodeIds(anchorNodeId?: string): string[] {
     return selectedIds;
   }
   return [anchorNodeId];
+}
+
+export function copySelectedNodes(): void {
+  globalDag.copyNodesToClipboard(getSelectedNodeIds());
+}
+
+export function cutSelectedNodes(): void {
+  globalDag.cutNodesToClipboard(getSelectedNodeIds());
+}
+
+export async function deleteNodes(nodeIds: string[]): Promise<void> {
+  let changed = false;
+  for (const nodeId of nodeIds) {
+    changed = globalDag.deleteNode(nodeId) || changed;
+  }
+  if (!changed) {
+    return;
+  }
+
+  globalDag.post();
+  await updateContent({ forceRender: true, restoreFocus: false });
+}
+
+export async function pasteClipboardNodes(nodes: Node[]): Promise<void> {
+  const pastedNodeIds = globalDag.pasteNodesFromClipboard(nodes);
+  if (pastedNodeIds.length === 0) {
+    return;
+  }
+
+  globalDag.post();
+  await updateContent({ forceRender: true, restoreFocus: false });
+  await applySelectedNodeIds(new Set(pastedNodeIds));
+  const firstPastedNodeId = pastedNodeIds[0];
+  if (firstPastedNodeId) {
+    await graph.focusElement(firstPastedNodeId);
+  }
 }
 
 configureContextmenu(graph, updateContent, updateContentAndFocus);

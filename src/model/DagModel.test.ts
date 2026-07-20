@@ -84,6 +84,65 @@ test("deletes nodes and removes all incoming references", () => {
   assert.equal(model.getNode("left")?.disabled, undefined);
 });
 
+test("copies and pastes nodes with unique names and internal edges", () => {
+  const source = new DagModel({
+    nodes: [
+      { name: "external" },
+      { name: "source", className: "Source", udfs: [{ name: "normalize" }] },
+      { name: "sink", preNodes: ["source", "external"], disabled: true },
+    ],
+  });
+  const target = new DagModel({
+    nodes: [{ name: "source" }, { name: "sink" }, { name: "sink-1" }],
+  });
+
+  const copiedNodes = source.getClipboardNodes(["source", "sink"]);
+  assert.deepEqual(
+    copiedNodes.map((node) => node.name),
+    ["source", "sink"]
+  );
+  assert.deepEqual(copiedNodes.find((node) => node.name === "sink")?.preNodes, ["source"]);
+
+  const pastedNodeIds = target.pasteClipboardNodes(copiedNodes);
+  assert.deepEqual(pastedNodeIds, ["source-1", "sink-2"]);
+  assert.deepEqual(target.getNode("sink-2")?.preNodes, ["source-1"]);
+  assert.equal(target.getNode("sink-2")?.disabled, true);
+  assert.equal(target.getNode("source-1")?.udfs?.[0]?.name, "normalize");
+});
+
+test("copies and pastes UDFs with unique sibling names", () => {
+  const source = new DagModel({
+    nodes: [
+      {
+        name: "source",
+        udfs: [
+          {
+            name: "normalize",
+            className: "Normalize",
+            props: [{ name: "trim", value: "true", type: "Boolean" }],
+            udfs: [{ name: "inner" }],
+            disabled: true,
+          },
+        ],
+      },
+      { name: "target", udfs: [{ name: "normalize" }, { name: "normalize-1" }] },
+    ],
+  });
+
+  const copiedUdfs = source.getClipboardUdfs(["source.normalize"]);
+  assert.deepEqual(
+    copiedUdfs.map((udf) => udf.name),
+    ["normalize"]
+  );
+
+  const pastedUdfIds = source.pasteClipboardUdfs("target", copiedUdfs);
+  assert.deepEqual(pastedUdfIds, ["target.normalize-2"]);
+  assert.equal(source.getUdf("target.normalize-2")?.className, "Normalize");
+  assert.equal(source.getUdf("target.normalize-2")?.props?.[0]?.name, "trim");
+  assert.equal(source.getUdf("target.normalize-2")?.udfs?.[0]?.name, "inner");
+  assert.equal(source.getUdf("target.normalize-2")?.disabled, true);
+});
+
 test("manages nested UDFs without changing their JSON shape", () => {
   const dag: Dag = {
     nodes: [{ name: "node", udfs: [{ name: "outer", udfs: [{ name: "inner" }] }] }],

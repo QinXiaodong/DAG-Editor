@@ -177,6 +177,70 @@ export class DagModel {
     return true;
   }
 
+  getClipboardNodes(nodeIds: string[]): Node[] {
+    const copiedNodeIds = new Set(nodeIds);
+    return (this.dag.nodes ?? [])
+      .filter((node) => copiedNodeIds.has(node.name))
+      .map((node) => {
+        const copy = cloneNode(node);
+        const preNodes = (copy.preNodes ?? []).filter((name) => copiedNodeIds.has(name));
+        copy.preNodes = preNodes.length > 0 ? preNodes : undefined;
+        return copy;
+      });
+  }
+
+  pasteClipboardNodes(nodes: Node[]): string[] {
+    if (nodes.length === 0) {
+      return [];
+    }
+
+    const targetNodes = this.ensureNodes();
+    const reservedNames = new Set(targetNodes.map((node) => node.name));
+    const nameMap = new Map<string, string>();
+    for (const node of nodes) {
+      const nextName = getAvailablePastedName(node.name, reservedNames);
+      reservedNames.add(nextName);
+      nameMap.set(node.name, nextName);
+    }
+
+    const pastedNodes = nodes.map((node) => {
+      const copy = cloneNode(node);
+      copy.name = nameMap.get(node.name) ?? node.name;
+      const preNodes = (node.preNodes ?? [])
+        .map((name) => nameMap.get(name))
+        .filter((name): name is string => Boolean(name));
+      copy.preNodes = preNodes.length > 0 ? preNodes : undefined;
+      return copy;
+    });
+    targetNodes.push(...pastedNodes);
+    return pastedNodes.map((node) => node.name);
+  }
+
+  getClipboardUdfs(fullUdfIds: string[]): Udf[] {
+    return fullUdfIds
+      .map((fullUdfId) => this.getUdf(fullUdfId))
+      .filter((udf): udf is Udf => Boolean(udf))
+      .map(cloneUdf);
+  }
+
+  pasteClipboardUdfs(prefix: string, udfs: Udf[]): string[] {
+    const owner = this.getUdfOwner(prefix);
+    if (!owner || udfs.length === 0) {
+      return [];
+    }
+
+    owner.udfs ??= [];
+    const reservedNames = new Set(owner.udfs.map((udf) => udf.name));
+    const pastedUdfs = udfs.map((udf) => {
+      const copy = cloneUdf(udf);
+      copy.name = getAvailablePastedName(udf.name, reservedNames);
+      reservedNames.add(copy.name);
+      return copy;
+    });
+    owner.udfs.push(...pastedUdfs);
+    return pastedUdfs.map((udf) => `${prefix}.${udf.name}`);
+  }
+
   isDisabled(nodeId: string): boolean {
     const node = this.getNode(nodeId);
     return node ? this.isNodeDisabled(node) : false;
@@ -431,6 +495,28 @@ function isProp(value: unknown): value is Prop {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function cloneNode(node: Node): Node {
+  return JSON.parse(JSON.stringify(node)) as Node;
+}
+
+function cloneUdf(udf: Udf): Udf {
+  return JSON.parse(JSON.stringify(udf)) as Udf;
+}
+
+function getAvailablePastedName(name: string, reservedNames: Set<string>): string {
+  if (!reservedNames.has(name)) {
+    return name;
+  }
+
+  let index = 1;
+  let candidate = `${name}-${index}`;
+  while (reservedNames.has(candidate)) {
+    index += 1;
+    candidate = `${name}-${index}`;
+  }
+  return candidate;
 }
 
 function isOptionalString(value: unknown): boolean {

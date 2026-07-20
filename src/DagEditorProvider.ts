@@ -1,7 +1,29 @@
 import * as vscode from "vscode";
 import { DAG_EDITOR_VIEW_TYPE, NEW_DAG_COMMAND, SAVE_DAG_COMMAND } from "./constants";
 import { DocumentSession } from "./DocumentSession";
-import { isUpdateDocumentMessage } from "./model/messages";
+import {
+  isCopyNodesMessage,
+  isCopyUdfsMessage,
+  isCutNodesMessage,
+  isCutUdfsMessage,
+  isNodeClipboardPayload,
+  isPasteNodesRequestMessage,
+  isPasteUdfsRequestMessage,
+  isUdfClipboardPayload,
+  isUpdateDocumentMessage,
+} from "./model/messages";
+import type {
+  ClipboardNodesMessage,
+  ClipboardUdfsMessage,
+  CopyNodesMessage,
+  CopyUdfsMessage,
+  CutNodesCompleteMessage,
+  CutNodesMessage,
+  CutUdfsCompleteMessage,
+  CutUdfsMessage,
+  NodeClipboardPayload,
+  UdfClipboardPayload,
+} from "./model/messages";
 import { getWebviewContent } from "./webview/getWebviewContent";
 
 export class DagEditorProvider implements vscode.CustomTextEditorProvider {
@@ -100,6 +122,18 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
       webview.onDidReceiveMessage((message: unknown) => {
         if (isUpdateDocumentMessage(message)) {
           session.handleMessage(message, webview);
+        } else if (isCopyNodesMessage(message)) {
+          void this.copyNodesToClipboard(message);
+        } else if (isCutNodesMessage(message)) {
+          void this.cutNodesToClipboard(message, webview);
+        } else if (isCopyUdfsMessage(message)) {
+          void this.copyUdfsToClipboard(message);
+        } else if (isCutUdfsMessage(message)) {
+          void this.cutUdfsToClipboard(message, webview);
+        } else if (isPasteNodesRequestMessage(message)) {
+          void this.pasteNodesFromClipboard(webview);
+        } else if (isPasteUdfsRequestMessage(message)) {
+          void this.pasteUdfsFromClipboard(webview);
         }
       }),
     ];
@@ -128,5 +162,109 @@ export class DagEditorProvider implements vscode.CustomTextEditorProvider {
 
   private requestSave(): void {
     void this.activeWebview?.postMessage({ type: "requestSave" });
+  }
+
+  private async copyNodesToClipboard(message: CopyNodesMessage): Promise<void> {
+    try {
+      await this.writeNodesToClipboard(message.nodes);
+    } catch {
+      void vscode.window.showWarningMessage("Failed to copy DAG nodes.");
+    }
+  }
+
+  private async cutNodesToClipboard(
+    message: CutNodesMessage,
+    webview: vscode.Webview
+  ): Promise<void> {
+    try {
+      await this.writeNodesToClipboard(message.nodes);
+      const completeMessage: CutNodesCompleteMessage = {
+        type: "cutNodesComplete",
+        nodeIds: message.nodes.map((node) => node.name),
+      };
+      await webview.postMessage(completeMessage);
+    } catch {
+      void vscode.window.showWarningMessage("Failed to cut DAG nodes.");
+    }
+  }
+
+  private async copyUdfsToClipboard(message: CopyUdfsMessage): Promise<void> {
+    try {
+      await this.writeUdfsToClipboard(message.udfs);
+    } catch {
+      void vscode.window.showWarningMessage("Failed to copy DAG UDFs.");
+    }
+  }
+
+  private async cutUdfsToClipboard(
+    message: CutUdfsMessage,
+    webview: vscode.Webview
+  ): Promise<void> {
+    try {
+      await this.writeUdfsToClipboard(message.udfs);
+      const completeMessage: CutUdfsCompleteMessage = {
+        type: "cutUdfsComplete",
+        udfIds: message.udfIds,
+      };
+      await webview.postMessage(completeMessage);
+    } catch {
+      void vscode.window.showWarningMessage("Failed to cut DAG UDFs.");
+    }
+  }
+
+  private async writeNodesToClipboard(nodes: CopyNodesMessage["nodes"]): Promise<void> {
+    const payload: NodeClipboardPayload = {
+      type: "dag-editor.nodes",
+      version: 1,
+      nodes,
+    };
+    await vscode.env.clipboard.writeText(JSON.stringify(payload, null, 2));
+  }
+
+  private async writeUdfsToClipboard(udfs: CopyUdfsMessage["udfs"]): Promise<void> {
+    const payload: UdfClipboardPayload = {
+      type: "dag-editor.udfs",
+      version: 1,
+      udfs,
+    };
+    await vscode.env.clipboard.writeText(JSON.stringify(payload, null, 2));
+  }
+
+  private async pasteNodesFromClipboard(webview: vscode.Webview): Promise<void> {
+    try {
+      const text = await vscode.env.clipboard.readText();
+      const payload = JSON.parse(text) as unknown;
+      if (!isNodeClipboardPayload(payload)) {
+        void vscode.window.showWarningMessage("Clipboard does not contain DAG nodes.");
+        return;
+      }
+
+      const message: ClipboardNodesMessage = {
+        type: "clipboardNodes",
+        nodes: payload.nodes,
+      };
+      await webview.postMessage(message);
+    } catch {
+      void vscode.window.showWarningMessage("Clipboard does not contain DAG nodes.");
+    }
+  }
+
+  private async pasteUdfsFromClipboard(webview: vscode.Webview): Promise<void> {
+    try {
+      const text = await vscode.env.clipboard.readText();
+      const payload = JSON.parse(text) as unknown;
+      if (!isUdfClipboardPayload(payload)) {
+        void vscode.window.showWarningMessage("Clipboard does not contain DAG UDFs.");
+        return;
+      }
+
+      const message: ClipboardUdfsMessage = {
+        type: "clipboardUdfs",
+        udfs: payload.udfs,
+      };
+      await webview.postMessage(message);
+    } catch {
+      void vscode.window.showWarningMessage("Clipboard does not contain DAG UDFs.");
+    }
   }
 }

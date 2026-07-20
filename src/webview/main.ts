@@ -2,12 +2,24 @@ import type { ExtensionMessage } from "../model/messages";
 import { globalDag } from "./Dag";
 import { flushPendingSave, registerEditEvents, currentId } from "./edit";
 import {
+  copySelectedNodes,
+  cutSelectedNodes,
+  deleteNodes,
   graph,
+  pasteClipboardNodes,
   registerGraphSelectionEvents,
   registerGraphThemeEvents,
   updateContent,
 } from "./graph";
-import { currentPrefix, manageUdf, registerManageUdfEvents } from "./manageUdf";
+import {
+  copySelectedUdfs,
+  currentPrefix,
+  cutSelectedUdfs,
+  deleteUdfs,
+  manageUdf,
+  pasteClipboardUdfs,
+  registerManageUdfEvents,
+} from "./manageUdf";
 import switchView, { currentViewId } from "./switchView";
 import { registerGraphWheelZoomFallback } from "./graphWheelZoom";
 
@@ -16,6 +28,22 @@ let hasDeferredRender = false;
 window.addEventListener("message", (event: MessageEvent<ExtensionMessage>) => {
   if (event.data.type === "requestSave") {
     saveDocument();
+    return;
+  }
+  if (event.data.type === "clipboardNodes") {
+    void pasteClipboardNodes(event.data.nodes);
+    return;
+  }
+  if (event.data.type === "clipboardUdfs") {
+    pasteClipboardUdfs(event.data.udfs);
+    return;
+  }
+  if (event.data.type === "cutNodesComplete") {
+    void deleteNodes(event.data.nodeIds);
+    return;
+  }
+  if (event.data.type === "cutUdfsComplete") {
+    deleteUdfs(event.data.udfIds);
     return;
   }
   const shouldRender =
@@ -47,6 +75,42 @@ document.addEventListener("keydown", (event) => {
     event.preventDefault();
     event.stopPropagation();
     saveDocument();
+    return;
+  }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+    if (currentViewId === "canvasContainer") {
+      event.preventDefault();
+      event.stopPropagation();
+      copySelectedNodes();
+    } else if (currentViewId === "manageUdfContainer") {
+      event.preventDefault();
+      event.stopPropagation();
+      copySelectedUdfs();
+    }
+    return;
+  }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "x") {
+    if (currentViewId === "canvasContainer") {
+      event.preventDefault();
+      event.stopPropagation();
+      cutSelectedNodes();
+    } else if (currentViewId === "manageUdfContainer") {
+      event.preventDefault();
+      event.stopPropagation();
+      cutSelectedUdfs();
+    }
+    return;
+  }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "v") {
+    if (currentViewId === "canvasContainer") {
+      event.preventDefault();
+      event.stopPropagation();
+      globalDag.requestPasteNodesFromClipboard();
+    } else if (currentViewId === "manageUdfContainer") {
+      event.preventDefault();
+      event.stopPropagation();
+      globalDag.requestPasteUdfsFromClipboard();
+    }
     return;
   }
 
