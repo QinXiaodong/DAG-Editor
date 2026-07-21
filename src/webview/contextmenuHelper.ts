@@ -212,8 +212,7 @@ function getGraph(): Graph {
 function clearSelectedNodeStates(): void {
   const graphInstance = getGraph();
   const states = Object.fromEntries(
-    graphInstance.getNodeData().map(({ id }) => {
-      const nodeId = String(id);
+    getDagGraphNodeIds(graphInstance).map((nodeId) => {
       return [
         nodeId,
         graphInstance.getElementState(nodeId).filter((state) => state !== "selected"),
@@ -293,12 +292,18 @@ function createMenuItem(name: string, action: MenuAction): MenuItem {
 
 function getSelectedNodeIds(anchorNodeId: string): string[] {
   const graphInstance = getGraph();
-  const selectedIds = graphInstance
-    .getNodeData()
-    .map(({ id }) => String(id))
-    .filter((id) => graphInstance.getElementState(id).includes("selected"));
+  const selectedIds = getDagGraphNodeIds(graphInstance).filter((id) =>
+    graphInstance.getElementState(id).includes("selected")
+  );
 
   return selectedIds.includes(anchorNodeId) ? selectedIds : [anchorNodeId];
+}
+
+function getDagGraphNodeIds(graphInstance: Graph): string[] {
+  return graphInstance
+    .getNodeData()
+    .map(({ id }) => String(id))
+    .filter((id) => Boolean(globalDag.getNode(id)));
 }
 
 function getNestedString(value: Record<string, unknown>, ...path: string[]): string | undefined {

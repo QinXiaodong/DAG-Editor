@@ -5,10 +5,11 @@ import {
   copySelectedNodes,
   cutSelectedNodes,
   deleteNodes,
-  graph,
   pasteClipboardNodes,
   registerGraphSelectionEvents,
   registerGraphThemeEvents,
+  resetCreateEdgeInteraction,
+  scheduleGraphResize,
   updateContent,
 } from "./graph";
 import {
@@ -55,14 +56,7 @@ window.addEventListener("message", (event: MessageEvent<ExtensionMessage>) => {
   }
 });
 
-window.addEventListener("resize", () => {
-  const container = document.getElementById("canvasContainer");
-  if (!container) {
-    return;
-  }
-  graph.resize(container.clientWidth, container.clientHeight - 2);
-  void graph.fitCenter();
-});
+window.addEventListener("resize", scheduleGraphResize);
 
 registerEditEvents();
 registerManageUdfEvents();
@@ -151,14 +145,18 @@ function showCanvas(): void {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && hasDeferredRender) {
-    hasDeferredRender = false;
-    void updateContent({ restoreFocus: false });
+  if (!document.hidden) {
+    if (hasDeferredRender) {
+      hasDeferredRender = false;
+      void updateContent({ restoreFocus: false });
+    }
+    scheduleGraphResize();
   }
   if (document.hidden && currentViewId === "editContainer") {
     flushPendingSave();
   }
   if (document.hidden) {
+    resetCreateEdgeInteraction();
     globalDag.flush();
   }
 });
@@ -167,6 +165,7 @@ window.addEventListener("pagehide", () => {
   if (currentViewId === "editContainer") {
     flushPendingSave();
   }
+  resetCreateEdgeInteraction();
   globalDag.flush();
 });
 

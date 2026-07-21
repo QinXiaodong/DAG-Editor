@@ -1,5 +1,5 @@
 import { Graph } from "@antv/g6";
-import type { GraphData } from "@antv/g6";
+import type { BehaviorOptions, GraphData } from "@antv/g6";
 import {
   configureContextmenu,
   contextmenuClickCallback,
@@ -16,36 +16,16 @@ const FALLBACK_LIGHT = "#616161";
 const FALLBACK_DARK = "#cccccc";
 const FALLBACK_ACTIVE_LIGHT = "#000000";
 const FALLBACK_ACTIVE_DARK = "#ffffff";
+const CREATE_EDGE_BEHAVIOR_KEY = "dag-editor-create-edge";
+const CREATE_EDGE_ASSIST_EDGE_ID = "g6-create-edge-assist-edge-id";
+const CREATE_EDGE_ASSIST_NODE_ID = "g6-create-edge-assist-node-id";
 
 export const graph = new Graph({
   container: "canvasContainer",
   animation: false,
   autoResize: false,
   padding: 10,
-  behaviors: [
-    {
-      type: "drag-canvas",
-    },
-    "hover-activate",
-    {
-      type: "create-edge",
-      onFinish: (e: { source: string; target: string }) => {
-        const edgeAdded = globalDag.addEdge(e.source, e.target);
-        if (edgeAdded) {
-          globalDag.post();
-        }
-        void updateContent(!edgeAdded);
-      },
-      style: {
-        endArrow: true,
-        lineWidth: 3,
-        radius: 20,
-        stroke: getGraphForegroundColor(getActiveColor()),
-        opacity: 1,
-        loop: false,
-      },
-    },
-  ],
+  behaviors: getGraphBehaviors(),
   plugins: [
     {
       type: "contextmenu",
@@ -157,11 +137,16 @@ export function updateContent(options: boolean | UpdateContentOptions = {}): Pro
   renderQueue = renderQueue
     .catch(() => undefined)
     .then(async () => {
+      resetCreateEdgeInteraction();
       graph.setData(graphData);
       await graph.render();
+      hasRenderedGraph = true;
       if (isFirstRender) {
         isFirstRender = false;
         await graph.fitCenter();
+      }
+      if (pendingGraphResize) {
+        scheduleGraphResize();
       }
     })
     .catch((error: unknown) => {
@@ -186,18 +171,41 @@ export function registerGraphThemeEvents(): void {
   });
 }
 
+export function scheduleGraphResize(): void {
+  pendingGraphResize = true;
+  if (resizeAnimationFrame !== undefined) {
+    return;
+  }
+
+  resizeAnimationFrame = window.requestAnimationFrame(() => {
+    resizeAnimationFrame = undefined;
+    if (!hasRenderedGraph) {
+      return;
+    }
+    void renderQueue.then(resizeGraphToContainer);
+  });
+}
+
 export function registerGraphSelectionEvents(): void {
   graph.on("node:click", (event: unknown) => {
     const nodeId = getEventTargetId(event);
-    if (!nodeId) {
+    if (!nodeId || !globalDag.getNode(nodeId)) {
+      return;
+    }
+    if (!isMultiSelectEvent(event)) {
+      void applySelectedNodeIds(new Set());
       return;
     }
     const selectedIds = getSelectedNodeIds();
-    const shouldAppend = isMultiSelectEvent(event);
-    const nextSelectedIds = shouldAppend
-      ? toggleSelectedId(selectedIds, nodeId)
-      : new Set([nodeId]);
+    const nextSelectedIds = toggleSelectedId(selectedIds, nodeId);
     void applySelectedNodeIds(nextSelectedIds);
+  });
+
+  graph.on("node:pointerout", (event: unknown) => {
+    const nodeId = getEventTargetId(event);
+    if (nodeId && globalDag.getNode(nodeId)) {
+      void clearActiveNodeState(nodeId);
+    }
   });
 
   graph.on("canvas:click", () => {
@@ -205,11 +213,27 @@ export function registerGraphSelectionEvents(): void {
   });
 }
 
+export function resetCreateEdgeInteraction(): void {
+  graph.setBehaviors((behaviors) =>
+    behaviors.filter(
+      (behavior) => !(typeof behavior === "object" && behavior.key === CREATE_EDGE_BEHAVIOR_KEY)
+    )
+  );
+
+  if (graph.getEdgeData().some(({ id }) => id === CREATE_EDGE_ASSIST_EDGE_ID)) {
+    graph.removeEdgeData([CREATE_EDGE_ASSIST_EDGE_ID]);
+  }
+  if (graph.getNodeData().some(({ id }) => id === CREATE_EDGE_ASSIST_NODE_ID)) {
+    graph.removeNodeData([CREATE_EDGE_ASSIST_NODE_ID]);
+  }
+
+  graph.setBehaviors((behaviors) => [...behaviors, getCreateEdgeBehavior()]);
+}
+
 export function getSelectedNodeIds(anchorNodeId?: string): string[] {
-  const selectedIds = graph
-    .getNodeData()
-    .map(({ id }) => String(id))
-    .filter((id) => graph.getElementState(id).includes("selected"));
+  const selectedIds = getDagGraphNodeIds().filter((id) =>
+    graph.getElementState(id).includes("selected")
+  );
 
   if (!anchorNodeId || selectedIds.includes(anchorNodeId)) {
     return selectedIds;
@@ -256,8 +280,11 @@ export async function pasteClipboardNodes(nodes: Node[]): Promise<void> {
 configureContextmenu(graph, updateContent, updateContentAndFocus);
 
 let isFirstRender = true;
+let hasRenderedGraph = false;
 let lastGraphSignature: string | undefined;
 let renderQueue = Promise.resolve();
+let pendingGraphResize = false;
+let resizeAnimationFrame: number | undefined;
 
 function getGraphData(): GraphData {
   const nodes: NonNullable<GraphData["nodes"]> = [];
@@ -318,6 +345,42 @@ function getGraphData(): GraphData {
     }
   }
   return { nodes, edges };
+}
+
+function getGraphBehaviors(): BehaviorOptions {
+  return [
+    {
+      type: "drag-canvas",
+    },
+    "hover-activate",
+    getCreateEdgeBehavior(),
+  ];
+}
+
+function getCreateEdgeBehavior(): BehaviorOptions[number] {
+  return {
+    type: "create-edge",
+    key: CREATE_EDGE_BEHAVIOR_KEY,
+    enable: (event: unknown) => {
+      const nodeId = getEventTargetId(event);
+      return !isMultiSelectEvent(event) && Boolean(nodeId && globalDag.getNode(nodeId));
+    },
+    onFinish: (e: { source: string; target: string }) => {
+      const edgeAdded = globalDag.addEdge(e.source, e.target);
+      if (edgeAdded) {
+        globalDag.post();
+      }
+      void updateContent(!edgeAdded);
+    },
+    style: {
+      endArrow: true,
+      lineWidth: 3,
+      radius: 20,
+      stroke: getGraphForegroundColor(getActiveColor()),
+      opacity: 1,
+      loop: false,
+    },
+  };
 }
 
 function isDark(): boolean {
@@ -398,13 +461,50 @@ function toggleSelectedId(selectedIds: string[], nodeId: string): Set<string> {
 
 async function applySelectedNodeIds(selectedIds: Set<string>): Promise<void> {
   const states = Object.fromEntries(
-    graph.getNodeData().map(({ id }) => {
-      const nodeId = String(id);
+    getDagGraphNodeIds().map((nodeId) => {
       const currentStates = graph.getElementState(nodeId).filter((state) => state !== "selected");
       return [nodeId, selectedIds.has(nodeId) ? [...currentStates, "selected"] : currentStates];
     })
   );
   await graph.setElementState(states, false);
+}
+
+async function clearActiveNodeState(nodeId: string): Promise<void> {
+  const currentStates = graph.getElementState(nodeId).filter((state) => state !== "active");
+  await graph.setElementState({ [nodeId]: currentStates }, false);
+}
+
+function getDagGraphNodeIds(): string[] {
+  return graph
+    .getNodeData()
+    .map(({ id }) => String(id))
+    .filter((id) => Boolean(globalDag.getNode(id)));
+}
+
+async function resizeGraphToContainer(): Promise<void> {
+  if (document.hidden) {
+    return;
+  }
+
+  const container = document.getElementById("canvasContainer");
+  if (!container) {
+    return;
+  }
+
+  const width = container.clientWidth;
+  const height = container.clientHeight - 2;
+  if (width <= 0 || height <= 0) {
+    return;
+  }
+
+  pendingGraphResize = false;
+  try {
+    graph.resize(width, height);
+    await graph.fitCenter();
+  } catch (error) {
+    pendingGraphResize = true;
+    console.error("Could not resize DAG graph", error);
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
