@@ -208,6 +208,13 @@ export function registerGraphSelectionEvents(): void {
     }
   });
 
+  graph.on("node:dblclick", (event: unknown) => {
+    const nodeId = getEventTargetId(event);
+    if (nodeId && globalDag.getNode(nodeId)) {
+      manageUdf(nodeId);
+    }
+  });
+
   graph.on("canvas:click", () => {
     void applySelectedNodeIds(new Set());
   });

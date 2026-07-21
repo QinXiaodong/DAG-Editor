@@ -76,6 +76,12 @@ export function addUdf(udf: Udf, index: number): void {
   item.classList.toggle("disabled", globalDag.isUdfDisabled(udf));
   item.classList.toggle("selected", selectedUdfIds.has(fullUdfId));
   item.addEventListener("click", (event) => handleUdfClick(item, event));
+  item.addEventListener("dblclick", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    selectedUdfIds.clear();
+    manageUdf(fullUdfId);
+  });
   item.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     event.stopPropagation();
