@@ -29,12 +29,12 @@ export function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.
         <div id="rightClickMenu" role="menu" style="display: none; position: absolute;">
           <ul>
             <li role="menuitem" data-action="edit-udf">&#32534;&#36753;UDF</li>
+            <li role="menuitem" data-action="manage-udf">&#31649;&#29702;&#23376;UDF</li>
             <li role="menuitem" data-action="copy-udf">&#22797;&#21046;UDF</li>
             <li role="menuitem" data-action="cut-udf">&#21098;&#20999;UDF</li>
             <li role="menuitem" data-action="paste-udf">&#31896;&#36148;UDF</li>
             <li role="menuitem" data-action="delete-udf">&#21024;&#38500;UDF</li>
             <li role="menuitem" data-action="disable-udf" id="disableUdfMenuItem"></li>
-            <li role="menuitem" data-action="manage-udf">&#31649;&#29702;&#23376;UDF</li>
           </ul>
         </div>
         <div id="canvasContainer"></div>

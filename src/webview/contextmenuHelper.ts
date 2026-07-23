@@ -257,13 +257,13 @@ function getNodeMenuItems(id: string): MenuItem[] {
 
   return [
     createMenuItem("编辑节点", { type: "node", item: "editNode", id }),
+    createMenuItem("管理UDF", { type: "node", item: "manageUdf", id }),
     createMenuItem("复制节点", { type: "node", item: "copyNode", id }),
     createMenuItem("剪切节点", { type: "node", item: "cutNode", id }),
     createMenuItem("新建下游节点", { type: "node", item: "newDownstreamNode", id }),
     createMenuItem("新建上游节点", { type: "node", item: "newUpstreamNode", id }),
     createMenuItem("删除节点", { type: "node", item: "deleteNode", id }),
     disabledMenuItem,
-    createMenuItem("管理UDF", { type: "node", item: "manageUdf", id }),
   ];
 }
 

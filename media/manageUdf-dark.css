@@ -1,5 +1,4 @@
-#manageUdfContainer {
-  align-items: center;
+body {
   --dag-graph-foreground: var(
     --vscode-editor-foreground,
     var(--vscode-icon-foreground, var(--vscode-foreground))
@@ -7,9 +6,13 @@
   --dag-disabled-foreground: var(--vscode-disabledForeground, #858585);
 }
 
-body.vscode-light #manageUdfContainer,
-body.vscode-high-contrast-light #manageUdfContainer {
+body.vscode-light,
+body.vscode-high-contrast-light {
   --dag-disabled-foreground: var(--vscode-descriptionForeground, var(--vscode-disabledForeground, #6c6c6c));
+}
+
+#manageUdfContainer {
+  align-items: center;
 }
 
 #manageUdfContainer .outerDiv {
@@ -70,6 +73,8 @@ body.vscode-high-contrast-light #manageUdfContainer {
 }
 
 #manageUdfContainer li {
+  display: flex;
+  justify-content: center;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -82,13 +87,18 @@ body.vscode-high-contrast-light #manageUdfContainer {
   text-align: center;
   align-items: center;
   height: 30px;
-  line-height: 30px;
+  line-height: normal;
   color: var(--dag-graph-foreground);
   border-radius: 4px;
   border: 1px solid var(--dag-graph-foreground);
   background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+  box-sizing: border-box;
   list-style-type: none;
   position: relative;
+  transform-origin: center;
+  transition:
+    border-width 80ms ease,
+    transform 80ms ease;
 }
 
 #manageUdfContainer li.disabled {
@@ -99,20 +109,54 @@ body.vscode-high-contrast-light #manageUdfContainer {
 }
 
 #manageUdfContainer li:hover,
+#manageUdfContainer li.dragging-source {
+  border-width: 2px;
+  transform: scale(1.01);
+}
+
+#manageUdfContainer li.disabled:hover,
+#manageUdfContainer li.disabled.dragging-source {
+  border-color: currentColor;
+  border-style: dashed;
+}
+
+#manageUdfContainer ul.dragging li:hover {
+  border-color: var(--dag-graph-foreground);
+  border-width: 1px;
+  transform: scale(1);
+}
+
+#manageUdfContainer ul.dragging li.disabled:hover {
+  border-color: var(--dag-disabled-foreground);
+}
+
+#manageUdfContainer ul.dragging li.dragging-source {
+  border-width: 2px;
+  transform: scale(1.01);
+}
+
+#manageUdfContainer li.suppress-hover:hover {
+  border-color: var(--dag-graph-foreground);
+  border-width: 1px;
+  transform: scale(1);
+}
+
+#manageUdfContainer li.disabled.suppress-hover:hover {
+  border-color: var(--dag-disabled-foreground);
+}
+
 #manageUdfContainer li.selected {
   background: var(--vscode-menu-selectionBackground, var(--vscode-list-activeSelectionBackground));
   border-color: var(--dag-graph-foreground);
   color: var(--vscode-menu-selectionForeground, var(--vscode-list-activeSelectionForeground));
 }
 
-#manageUdfContainer ul.dragging li:hover,
 #manageUdfContainer ul.dragging li.selected {
   background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
   border-color: var(--dag-graph-foreground);
   color: var(--dag-graph-foreground);
 }
 
-#manageUdfContainer ul.dragging li.disabled:hover,
 #manageUdfContainer ul.dragging li.disabled.selected {
   background-color: transparent;
   border-color: var(--dag-disabled-foreground);
@@ -120,27 +164,37 @@ body.vscode-high-contrast-light #manageUdfContainer {
 }
 
 #manageUdfContainer .moving {
-  box-shadow: 0 0 0 1px var(--vscode-focusBorder, var(--dag-graph-foreground));
-  opacity: 0.8;
-  transform: scale(0.99);
+  opacity: 0;
 }
 
-#manageUdfContainer li.drop-before::before,
-#manageUdfContainer li.drop-after::after {
-  background: var(--vscode-focusBorder, var(--dag-graph-foreground));
-  border-radius: 999px;
-  box-shadow: 0 0 8px var(--vscode-focusBorder, var(--dag-graph-foreground));
-  content: "";
-  height: 3px;
-  left: 0;
-  position: absolute;
-  right: 0;
+li.drag-image {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+  border: 2px solid var(--dag-graph-foreground);
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: var(--dag-graph-foreground);
+  left: -10000px;
+  line-height: normal;
+  list-style-type: none;
+  margin: 0;
+  overflow: hidden;
+  padding-left: 10px;
+  padding-right: 10px;
+  pointer-events: none;
+  position: fixed;
+  text-align: center;
+  text-overflow: ellipsis;
+  top: -10000px;
+  white-space: nowrap;
+  z-index: 1000;
 }
 
-#manageUdfContainer li.drop-before::before {
-  top: -5px;
-}
-
-#manageUdfContainer li.drop-after::after {
-  bottom: -5px;
+li.drag-image.disabled {
+  background-color: transparent;
+  border-color: var(--dag-disabled-foreground);
+  border-style: dashed;
+  color: var(--dag-disabled-foreground);
 }

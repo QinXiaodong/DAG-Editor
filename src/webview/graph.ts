@@ -40,14 +40,8 @@ export const graph = new Graph({
   node: {
     state: {
       active: {
-        stroke: getGraphForegroundColor(getActiveColor()),
         halo: false,
-        lineWidth: 2,
-        fill: getNodeHighlightBackgroundColor(),
-        labelFill: getThemeColor("--vscode-list-activeSelectionForeground", getBaseColor()),
-        labelFontSize: 16,
-        labelFontStyle: "italic",
-        labelFontWeight: "normal",
+        lineWidth: 4,
       },
       selected: {
         stroke: getGraphForegroundColor(getActiveColor()),
@@ -75,7 +69,6 @@ export const graph = new Graph({
     type: DAG_EDGE_TYPE,
     state: {
       active: {
-        stroke: getThemeColor("--vscode-focusBorder", getActiveColor()),
         halo: false,
         lineWidth: 6,
       },
@@ -193,19 +186,12 @@ export function registerGraphSelectionEvents(): void {
       return;
     }
     if (!isMultiSelectEvent(event)) {
-      void applySelectedNodeIds(new Set());
+      void applySelectedNodeIds(new Set([nodeId]));
       return;
     }
     const selectedIds = getSelectedNodeIds();
     const nextSelectedIds = toggleSelectedId(selectedIds, nodeId);
     void applySelectedNodeIds(nextSelectedIds);
-  });
-
-  graph.on("node:pointerout", (event: unknown) => {
-    const nodeId = getEventTargetId(event);
-    if (nodeId && globalDag.getNode(nodeId)) {
-      void clearActiveNodeState(nodeId);
-    }
   });
 
   graph.on("node:dblclick", (event: unknown) => {
@@ -359,7 +345,13 @@ function getGraphBehaviors(): BehaviorOptions {
     {
       type: "drag-canvas",
     },
-    "hover-activate",
+    {
+      type: "hover-activate",
+      enable: (event: unknown) => {
+        const targetType = getEventTargetType(event);
+        return targetType === "node" || targetType === "edge";
+      },
+    },
     getCreateEdgeBehavior(),
   ];
 }
@@ -452,6 +444,13 @@ function getEventTargetId(event: unknown): string | undefined {
   return typeof id === "string" ? id : undefined;
 }
 
+function getEventTargetType(event: unknown): string | undefined {
+  if (!isRecord(event)) {
+    return undefined;
+  }
+  return typeof event.targetType === "string" ? event.targetType : undefined;
+}
+
 function isMultiSelectEvent(event: unknown): boolean {
   return isRecord(event) && (event.ctrlKey === true || event.metaKey === true);
 }
@@ -470,15 +469,17 @@ async function applySelectedNodeIds(selectedIds: Set<string>): Promise<void> {
   const states = Object.fromEntries(
     getDagGraphNodeIds().map((nodeId) => {
       const currentStates = graph.getElementState(nodeId).filter((state) => state !== "selected");
-      return [nodeId, selectedIds.has(nodeId) ? [...currentStates, "selected"] : currentStates];
+      return [nodeId, selectedIds.has(nodeId) ? addSelectedState(currentStates) : currentStates];
     })
   );
   await graph.setElementState(states, false);
 }
 
-async function clearActiveNodeState(nodeId: string): Promise<void> {
-  const currentStates = graph.getElementState(nodeId).filter((state) => state !== "active");
-  await graph.setElementState({ [nodeId]: currentStates }, false);
+function addSelectedState(states: string[]): string[] {
+  const nonActiveStates = states.filter((state) => state !== "active");
+  return states.includes("active")
+    ? [...nonActiveStates, "selected", "active"]
+    : [...states, "selected"];
 }
 
 function getDagGraphNodeIds(): string[] {

@@ -9,7 +9,11 @@ export let currentPrefix = "";
 
 let currentRightClickUdf: string | undefined;
 let draggedItem: HTMLLIElement | undefined;
+let dragPreview: HTMLLIElement | undefined;
+let dragPreviewOffset: { x: number; y: number } | undefined;
+let dragStartPoint: { x: number; y: number } | undefined;
 const selectedUdfIds = new Set<string>();
+const UDF_DRAG_PREVIEW_SCALE = 1.01;
 
 export function setCurrentPrefix(prefix: string): void {
   currentPrefix = prefix;
@@ -35,7 +39,7 @@ export function registerManageUdfEvents(): void {
   const list = getUdfList();
   list.addEventListener("dragstart", handleDragStart);
   list.addEventListener("dragenter", handleDragEnter);
-  list.addEventListener("dragover", (event) => event.preventDefault());
+  list.addEventListener("dragover", handleDragOver);
   list.addEventListener("dragend", handleDragEnd);
 
   const container = getElement<HTMLDivElement>(`#${viewId}`);
@@ -180,15 +184,37 @@ function handleDragStart(event: DragEvent): void {
   }
 
   draggedItem = item;
+  dragStartPoint = { x: event.clientX, y: event.clientY };
+  const startingOrder = getCurrentUdfOrder();
   getUdfList().classList.add("dragging");
+  item.classList.add("dragging-source");
+  item.dataset.dragStartOrder = JSON.stringify(startingOrder);
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", item.dataset.udfId ?? "");
+    const rect = item.getBoundingClientRect();
+    dragPreview = createUdfDragPreview(item, rect);
+    dragPreviewOffset = {
+      x: (event.clientX - rect.left) * UDF_DRAG_PREVIEW_SCALE,
+      y: (event.clientY - rect.top) * UDF_DRAG_PREVIEW_SCALE,
+    };
+    updateDragPreviewPosition(event);
+    const nativeDragImage = createTransparentDragImage();
+    event.dataTransfer.setDragImage(nativeDragImage, 0, 0);
+    window.addEventListener("dragover", updateDragPreviewPosition);
+    setTimeout(() => nativeDragImage.remove());
   }
   setTimeout(() => draggedItem?.classList.add("moving"));
 }
 
+function handleDragOver(event: DragEvent): void {
+  event.preventDefault();
+  updateDragPreviewPosition(event);
+}
+
 function handleDragEnter(event: DragEvent): void {
   event.preventDefault();
+  updateDragPreviewPosition(event);
   const targetItem = getListItem(event.target);
   if (!draggedItem || !targetItem || targetItem === draggedItem) {
     return;
@@ -200,10 +226,8 @@ function handleDragEnter(event: DragEvent): void {
   const targetIndex = items.indexOf(targetItem);
   if (currentIndex < targetIndex) {
     targetItem.after(draggedItem);
-    markDropIndicator(targetItem, "after");
   } else {
     targetItem.before(draggedItem);
-    markDropIndicator(targetItem, "before");
   }
 }
 
@@ -212,12 +236,25 @@ function handleDragEnd(): void {
     return;
   }
   draggedItem.classList.remove("moving");
+  draggedItem.classList.remove("dragging-source");
+  dragPreview?.remove();
+  dragPreview = undefined;
+  dragPreviewOffset = undefined;
+  window.removeEventListener("dragover", updateDragPreviewPosition);
+  const startingOrder = parseUdfOrder(draggedItem.dataset.dragStartOrder);
+  delete draggedItem.dataset.dragStartOrder;
   draggedItem = undefined;
-  getUdfList().classList.remove("dragging");
-  clearDropIndicators();
+  const list = getUdfList();
+  suppressDragStartPositionHover();
+  list.classList.remove("dragging");
 
   const owner = getOwner(currentPrefix);
   if (!owner?.udfs) {
+    return;
+  }
+
+  const nextOrder = getCurrentUdfOrder();
+  if (startingOrder && isSameOrder(startingOrder, nextOrder)) {
     return;
   }
 
@@ -225,17 +262,6 @@ function handleDragEnd(): void {
     .map((item) => owner.udfs?.[Number((item as HTMLLIElement).dataset.udfIndex)])
     .filter((udf): udf is Udf => Boolean(udf));
   globalDag.post();
-}
-
-function markDropIndicator(item: HTMLLIElement, position: "before" | "after"): void {
-  clearDropIndicators();
-  item.classList.add(position === "before" ? "drop-before" : "drop-after");
-}
-
-function clearDropIndicators(): void {
-  for (const item of getUdfList().querySelectorAll(".drop-before, .drop-after")) {
-    item.classList.remove("drop-before", "drop-after");
-  }
 }
 
 function handleUdfClick(item: HTMLLIElement, event: MouseEvent): void {
@@ -253,6 +279,7 @@ function handleUdfClick(item: HTMLLIElement, event: MouseEvent): void {
     }
   } else {
     selectedUdfIds.clear();
+    selectedUdfIds.add(fullUdfId);
   }
   updateSelectedClasses();
 }
@@ -391,11 +418,89 @@ function getListItem(target: EventTarget | null): HTMLLIElement | undefined {
     return undefined;
   }
   const item = target.closest<HTMLLIElement>("li");
-  return item && getUdfList().contains(item) ? item : undefined;
+  return item?.parentElement === getUdfList() ? item : undefined;
 }
 
 function getUdfList(): HTMLUListElement {
   return getElement<HTMLUListElement>(`#${viewId} ul`);
+}
+
+function suppressDragStartPositionHover(): void {
+  if (!dragStartPoint) {
+    return;
+  }
+
+  const target = document.elementFromPoint(dragStartPoint.x, dragStartPoint.y);
+  dragStartPoint = undefined;
+  const item = getListItem(target);
+  if (!item) {
+    return;
+  }
+
+  item.classList.add("suppress-hover");
+  const restoreHover = () => {
+    item.classList.remove("suppress-hover");
+    window.removeEventListener("mousemove", restoreHover);
+  };
+  window.addEventListener("mousemove", restoreHover);
+}
+
+function getCurrentUdfOrder(): string[] {
+  return Array.from(getUdfList().children)
+    .map((item) => (item as HTMLLIElement).dataset.udfId)
+    .filter((id): id is string => typeof id === "string");
+}
+
+function parseUdfOrder(value: string | undefined): string[] | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return Array.isArray(parsed) && parsed.every((id) => typeof id === "string")
+      ? parsed
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function isSameOrder(left: string[], right: string[]): boolean {
+  return left.length === right.length && left.every((id, index) => id === right[index]);
+}
+
+function updateDragPreviewPosition(event: DragEvent): void {
+  if (!dragPreview || !dragPreviewOffset || event.clientX === 0 || event.clientY === 0) {
+    return;
+  }
+
+  dragPreview.style.left = `${event.clientX - dragPreviewOffset.x}px`;
+  dragPreview.style.top = `${event.clientY - dragPreviewOffset.y}px`;
+}
+
+function createUdfDragPreview(item: HTMLLIElement, rect: DOMRect): HTMLLIElement {
+  const style = getComputedStyle(item);
+  const dragPreviewElement = item.cloneNode(true) as HTMLLIElement;
+  dragPreviewElement.classList.remove("moving");
+  dragPreviewElement.classList.add("drag-image");
+  dragPreviewElement.style.width = `${rect.width * UDF_DRAG_PREVIEW_SCALE}px`;
+  dragPreviewElement.style.height = `${rect.height * UDF_DRAG_PREVIEW_SCALE}px`;
+  dragPreviewElement.style.fontSize = `${parseFloat(style.fontSize) * UDF_DRAG_PREVIEW_SCALE}px`;
+  document.body.appendChild(dragPreviewElement);
+  return dragPreviewElement;
+}
+
+function createTransparentDragImage(): HTMLDivElement {
+  const element = document.createElement("div");
+  element.style.height = "1px";
+  element.style.left = "-10000px";
+  element.style.opacity = "0";
+  element.style.position = "fixed";
+  element.style.top = "-10000px";
+  element.style.width = "1px";
+  document.body.appendChild(element);
+  return element;
 }
 
 function getFullUdfId(udfName: string): string {
