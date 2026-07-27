@@ -76,8 +76,6 @@ body.vscode-high-contrast-light {
   display: flex;
   justify-content: center;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   padding-left: 10px;
   padding-right: 10px;
   margin-top: 5px;
@@ -99,6 +97,16 @@ body.vscode-high-contrast-light {
   transition:
     border-width 80ms ease,
     transform 80ms ease;
+}
+
+#manageUdfContainer .udf-label,
+li.drag-image .udf-label {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #manageUdfContainer li.disabled {

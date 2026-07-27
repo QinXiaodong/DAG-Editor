@@ -94,8 +94,11 @@ export function addUdf(udf: Udf, index: number): void {
     showMenu(event);
   });
 
-  item.textContent =
+  const label = document.createElement("span");
+  label.className = "udf-label";
+  label.textContent =
     udf.udfs && udf.udfs.length > 0 ? `${udf.name} (${udf.udfs.length})` : udf.name;
+  item.appendChild(label);
   getUdfList().appendChild(item);
 }
 

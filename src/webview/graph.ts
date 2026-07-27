@@ -19,6 +19,11 @@ const FALLBACK_ACTIVE_DARK = "#ffffff";
 const CREATE_EDGE_BEHAVIOR_KEY = "dag-editor-create-edge";
 const CREATE_EDGE_ASSIST_EDGE_ID = "g6-create-edge-assist-edge-id";
 const CREATE_EDGE_ASSIST_NODE_ID = "g6-create-edge-assist-node-id";
+const NODE_MIN_WIDTH = 180;
+const NODE_MAX_WIDTH = 360;
+const NODE_HEIGHT = 40;
+const NODE_LABEL_CHAR_WIDTH = 11;
+const NODE_LABEL_MAX_CHARS = 36;
 
 export const graph = new Graph({
   container: "canvasContainer",
@@ -286,6 +291,11 @@ function getGraphData(): GraphData {
   for (const node of globalDag.getNodes() || []) {
     const labelText =
       node.udfs && node.udfs.length > 0 ? `${node.name} (${node.udfs.length})` : node.name;
+    const displayLabelText = truncateNodeLabel(labelText);
+    const nodeWidth = Math.min(
+      NODE_MAX_WIDTH,
+      Math.max(NODE_MIN_WIDTH, NODE_LABEL_CHAR_WIDTH * displayLabelText.length)
+    );
     // 渲染节点
     nodes.push({
       id: node.name,
@@ -301,12 +311,12 @@ function getGraphData(): GraphData {
         labelFill: getGraphForegroundColor(getBaseColor()),
         labelFillOpacity: 1,
         labelPlacement: "center",
-        labelText: labelText,
+        labelText: displayLabelText,
         labelMaxWidth: "90%",
-        labelWordWrap: true,
+        labelWordWrap: false,
         labelFontSize: 16,
         labelFontStyle: "italic",
-        size: [Math.max(180, 11 * labelText.length), 40],
+        size: [nodeWidth, NODE_HEIGHT],
       },
 
       states: [globalDag.isNodeDisabled(node) ? "disabled" : "default"],
@@ -338,6 +348,12 @@ function getGraphData(): GraphData {
     }
   }
   return { nodes, edges };
+}
+
+function truncateNodeLabel(label: string): string {
+  return label.length > NODE_LABEL_MAX_CHARS
+    ? `${label.slice(0, NODE_LABEL_MAX_CHARS - 3)}...`
+    : label;
 }
 
 function getGraphBehaviors(): BehaviorOptions {
