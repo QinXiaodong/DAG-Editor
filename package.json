@@ -2,12 +2,35 @@
   "name": "dag-editor",
   "displayName": "DAG Editor",
   "description": "A custom document editor extension for json-formatted DAG files.",
+  "license": "SEE LICENSE IN LICENSE",
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "dag",
+    "graph",
+    "json",
+    "etl",
+    "flink",
+    "workflow",
+    "visualization",
+    "editor"
+  ],
+  "homepage": "https://github.com/QinXiaodong/DAG-Editor#readme",
+  "bugs": {
+    "url": "https://github.com/QinXiaodong/DAG-Editor/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/QinXiaodong/DAG-Editor.git"
   },
   "publisher": "QinXiaodong",
   "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
   "version": "0.4.0",
   "engines": {
     "vscode": "^1.75.0"
